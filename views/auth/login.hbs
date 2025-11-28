@@ -1,0 +1,54 @@
+<div class="row justify-content-center">
+    <div class="col-md-5 col-lg-4">
+        <div class="card mt-5">
+            <div class="card-header text-center bg-primary text-white">
+                <h3 class="mb-0">AppCenar</h3>
+                <small>Iniciar Sesión</small>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="/auth/login">
+                    <div class="mb-3">
+                        <label class="form-label">Usuario o Email</label>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            name="identifier" 
+                            placeholder="tu_usuario o correo@ejemplo.com"
+                            required 
+                        />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Contraseña</label>
+                        <input 
+                            type="password" 
+                            class="form-control" 
+                            name="password" 
+                            placeholder="********"
+                            required 
+                        />
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        Iniciar Sesión
+                    </button>
+                </form>
+
+                <hr>
+
+                <div class="d-grid gap-2">
+                    <a href="/auth/register/client" class="btn btn-outline-primary btn-sm">
+                        Registrarse como cliente / delivery
+                    </a>
+                    <a href="/auth/register/commerce" class="btn btn-outline-success btn-sm">
+                        Registrarse como comercio
+                    </a>
+                    <a href="/auth/forgot-password" class="btn btn-outline-warning btn-sm">
+                        ¿Olvidaste tu contraseña?
+                    </a>
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <small class="text-muted">Proyecto AppCenar - ITLA 2025</small>
+            </div>
+        </div>
+    </div>
+</div>
