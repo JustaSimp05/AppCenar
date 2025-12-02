@@ -3,6 +3,7 @@ const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const User = require('../models/User');
+const { sendMail } = require('../config/mailer');
 
 const router = express.Router();
 
@@ -134,9 +135,17 @@ router.post(
 
       const resetLink = `${req.protocol}://${req.get('host')}/auth/reset-password/${resetToken}`;
 
-      // Aquí luego integras Nodemailer. Por ahora lo verás en consola.
-      console.log('🔗 Enlace de restablecimiento:', resetLink);
-
+await sendMail({
+  to: user.correo,
+  subject: 'AppCenar - Restablecer contraseña',
+  html: `
+    <p>Hola ${user.nombre},</p>
+    <p>Has solicitado restablecer tu contraseña de AppCenar.</p>
+    <p>Haz clic en el siguiente enlace para establecer una nueva contraseña:</p>
+    <p><a href="${resetLink}">${resetLink}</a></p>
+    <p>Si no fuiste tú, puedes ignorar este correo.</p>
+  `
+});
       req.flash('success_msg', 'Si el usuario existe, se ha enviado un correo con las instrucciones.');
       return res.redirect('/auth/login');
     } catch (err) {
@@ -274,8 +283,18 @@ router.post(
       });
 
       // Aquí luego se envía correo de activación con activationToken
-      console.log('🔗 Enlace de activación (cliente/delivery):',
-        `${req.protocol}://${req.get('host')}/auth/activate/${activationToken}`);
+     const activationLink = `${req.protocol}://${req.get('host')}/auth/activate/${activationToken}`;
+
+await sendMail({
+  to: correo,
+  subject: 'AppCenar - Activa tu cuenta',
+  html: `
+    <p>Hola ${nombre},</p>
+    <p>Gracias por registrarte en AppCenar.</p>
+    <p>Activa tu cuenta haciendo clic en el siguiente enlace:</p>
+    <p><a href="${activationLink}">${activationLink}</a></p>
+  `
+});
 
       req.flash('success_msg', 'Registro exitoso. Revisa tu correo para activar tu cuenta.');
       res.redirect('/auth/login');
@@ -346,8 +365,18 @@ router.post(
         activationToken
       });
 
-      console.log('🔗 Enlace de activación (comercio):',
-        `${req.protocol}://${req.get('host')}/auth/activate/${activationToken}`);
+      const activationLink = `${req.protocol}://${req.get('host')}/auth/activate/${activationToken}`;
+
+await sendMail({
+  to: correo,
+  subject: 'AppCenar - Activa tu comercio',
+  html: `
+    <p>Hola ${nombreComercio},</p>
+    <p>Gracias por registrar tu comercio en AppCenar.</p>
+    <p>Activa tu cuenta haciendo clic en el siguiente enlace:</p>
+    <p><a href="${activationLink}">${activationLink}</a></p>
+  `
+});
 
       req.flash('success_msg', 'Comercio registrado. Revisa tu correo para activar tu cuenta.');
       res.redirect('/auth/login');
@@ -382,6 +411,40 @@ router.get('/activate/:token', async (req, res) => {
     console.error(err);
     req.flash('error_msg', 'Error en el servidor');
     res.redirect('/auth/login');
+  }
+});
+
+
+// Cómo usarlo para activar tu cuenta
+
+// En el navegador ve a:
+
+// http://localhost:3000/auth/force-activate/TU_USERNAME
+
+// Ejemplo, si tu usuario es rafa:
+
+// http://localhost:3000/auth/force-activate/rafa
+
+// Si existe, verás un mensaje en la página tipo:
+
+// Usuario rafa activado
+
+// Ahora ve a /auth/login, pon ese usuario y contraseña: ya no debería salir “Tu cuenta está inactiva”.
+
+router.get('/force-activate/:username', async (req, res) => {
+  const { username } = req.params;
+  try {
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.send('Usuario no encontrado');
+    }
+    user.isActive = true;
+    user.activationToken = undefined;
+    await user.save();
+    res.send(`Usuario ${username} activado`);
+  } catch (err) {
+    console.error(err);
+    res.send('Error activando usuario');
   }
 });
 

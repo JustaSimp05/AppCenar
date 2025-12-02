@@ -16,6 +16,8 @@ const UserSchema = new mongoose.Schema({
   tipoComercio: { type: String },         // placeholder por ahora
   isActive: { type: Boolean, default: false },
   activationToken: { type: String },
+    resetPasswordToken: { type: String },
+  resetPasswordExpires: { type: Date },
   createdAt: { type: Date, default: Date.now }
 });
 
