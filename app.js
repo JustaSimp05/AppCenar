@@ -58,6 +58,25 @@ hbs.registerHelper('eq', function (a, b) {
   return a === b;
 });
 
+hbs.registerHelper('json', function (context) {
+  return JSON.stringify(context);
+});
+
+hbs.registerHelper("multiply", function (a, b) {
+  return a * b;
+});
+
+hbs.registerHelper("includes", function (array, value) {
+  if (!Array.isArray(array)) return false;
+  return array.includes(value.toString());
+});
+
+hbs.registerHelper("includes", function (array, value) {
+  if (!Array.isArray(array)) return false;     // evita que explote
+  if (value == null) return false;             // evita error toString
+  return array.includes(value.toString());
+});
+
 // Conexión a MongoDB
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/appcenar_dev')
   .then(() => console.log('✅ MongoDB conectado'))
