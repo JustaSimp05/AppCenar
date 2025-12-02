@@ -1,5 +1,13 @@
-<div class="mt-4">
+<div class="mt-4 text-center">
   <h2>Home Cliente</h2>
   <p>Aquí irá el listado de tipos de comercios (placeholder).</p>
   <p>Estás logueado como: {{user.username}}</p>
+
+  <div class="mt-3">
+    {{#if user.fotoPerfil}}
+      <img src="{{user.fotoPerfil}}" alt="Foto de perfil" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;">
+    {{else}}
+      <img src="/img/default_avatar.png" alt="Sin foto" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;">
+    {{/if}}
+  </div>
 </div>
