@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const User = require('../models/User');
 const { sendMail } = require('../config/mailer');
+const upload = require('../config/upload');
 
 const router = express.Router();
 
@@ -241,6 +242,7 @@ router.get('/register/client', (req, res) => {
 // POST registro cliente/delivery
 router.post(
   '/register/client',
+  upload.single('fotoPerfil'),                 // ← agregar ESTO aquí
   [
     body('nombre').notEmpty().withMessage('Nombre requerido'),
     body('apellido').notEmpty().withMessage('Apellido requerido'),
@@ -249,7 +251,9 @@ router.post(
     body('username').notEmpty().withMessage('Usuario requerido'),
     body('rol').isIn(['cliente', 'delivery']).withMessage('Rol inválido'),
     body('password').isLength({ min: 6 }).withMessage('Contraseña mínima 6 caracteres'),
-    body('password2').custom((v, { req }) => v === req.body.password).withMessage('Las contraseñas no coinciden')
+    body('password2')
+      .custom((v, { req }) => v === req.body.password)
+      .withMessage('Las contraseñas no coinciden')
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -278,23 +282,23 @@ router.post(
         username,
         passwordHash,
         rol,
-        isActive: false,          // se crea inactivo según documento
+        fotoPerfil: req.file ? `/uploads/${req.file.filename}` : null,
+        isActive: false,
         activationToken
       });
 
-      // Aquí luego se envía correo de activación con activationToken
-     const activationLink = `${req.protocol}://${req.get('host')}/auth/activate/${activationToken}`;
+      const activationLink = `${req.protocol}://${req.get('host')}/auth/activate/${activationToken}`;
 
-await sendMail({
-  to: correo,
-  subject: 'AppCenar - Activa tu cuenta',
-  html: `
-    <p>Hola ${nombre},</p>
-    <p>Gracias por registrarte en AppCenar.</p>
-    <p>Activa tu cuenta haciendo clic en el siguiente enlace:</p>
-    <p><a href="${activationLink}">${activationLink}</a></p>
-  `
-});
+      await sendMail({
+        to: correo,
+        subject: 'AppCenar - Activa tu cuenta',
+        html: `
+          <p>Hola ${nombre},</p>
+          <p>Gracias por registrarte en AppCenar.</p>
+          <p>Activa tu cuenta haciendo clic en el siguiente enlace:</p>
+          <p><a href="${activationLink}">${activationLink}</a></p>
+        `
+      });
 
       req.flash('success_msg', 'Registro exitoso. Revisa tu correo para activar tu cuenta.');
       res.redirect('/auth/login');
@@ -305,6 +309,7 @@ await sendMail({
     }
   }
 );
+
 
 /* ========== REGISTRO COMERCIO ========== */
 
@@ -350,21 +355,21 @@ router.post(
       const activationToken = crypto.randomBytes(20).toString('hex');
 
       await User.create({
-        nombre: nombreComercio,
-        apellido: '',
-        telefono,
-        correo,
-        username,
-        passwordHash,
-        rol: 'comercio',
-        nombreComercio,
-        horaApertura,
-        horaCierre,
-        tipoComercio,
-        isActive: false, // se crea inactivo según documento
-        activationToken
-      });
-
+      nombre: nombreComercio,
+      apellido: '',
+      telefono,
+      correo,
+      username,
+      passwordHash,
+      rol: 'comercio',
+      nombreComercio,
+      horaApertura,
+      horaCierre,
+      tipoComercio,
+      logoComercio: req.file ? `/uploads/${req.file.filename}` : null,
+      isActive: false,
+      activationToken
+    });
       const activationLink = `${req.protocol}://${req.get('host')}/auth/activate/${activationToken}`;
 
 await sendMail({
@@ -431,7 +436,7 @@ router.get('/activate/:token', async (req, res) => {
 
 // Ahora ve a /auth/login, pon ese usuario y contraseña: ya no debería salir “Tu cuenta está inactiva”.
 
-router.get('/force-activate/:username', async (req, res) => {
+router.get('/c-activate/:username', async (req, res) => {
   const { username } = req.params;
   try {
     const user = await User.findOne({ username });

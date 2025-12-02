@@ -5,7 +5,7 @@
         <h4>Registro Cliente / Delivery</h4>
       </div>
       <div class="card-body">
-        <form method="POST" action="/auth/register/client">
+        <form method="POST" action="/auth/register/client" enctype="multipart/form-data">
           <div class="row">
             <div class="col-md-6 mb-3">
               <label class="form-label">Nombre</label>
@@ -25,6 +25,11 @@
           <div class="mb-3">
             <label class="form-label">Correo</label>
             <input type="email" name="correo" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Foto de perfil</label>
+            <input type="file" name="fotoPerfil" class="form-control" accept="image/*">
           </div>
 
           <div class="mb-3">

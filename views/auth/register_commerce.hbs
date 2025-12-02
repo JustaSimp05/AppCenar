@@ -5,7 +5,7 @@
         <h4>Registro Comercio</h4>
       </div>
       <div class="card-body">
-        <form method="POST" action="/auth/register/commerce">
+        <form method="POST" action="/auth/register/commerce" enctype="multipart/form-data">
           <div class="mb-3">
             <label class="form-label">Nombre del comercio</label>
             <input type="text" name="nombreComercio" class="form-control" required>
@@ -20,6 +20,11 @@
               <label class="form-label">Correo</label>
               <input type="email" name="correo" class="form-control" required>
             </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Logo del comercio</label>
+            <input type="file" name="logoComercio" class="form-control" accept="image/*">
           </div>
 
           <div class="mb-3">
@@ -40,7 +45,13 @@
 
           <div class="mb-3">
             <label class="form-label">Tipo de comercio</label>
-            <input type="text" name="tipoComercio" class="form-control" placeholder="Restaurante, Supermercado, etc." required>
+            <input
+              type="text"
+              name="tipoComercio"
+              class="form-control"
+              placeholder="Restaurante, Supermercado, etc."
+              required
+            >
           </div>
 
           <div class="row">

@@ -1,4 +1,5 @@
 const express = require('express');
+const User = require('../models/User'); // Asegúrate de tener el path correcto
 const router = express.Router();
 
 const requireClient = (req, res, next) => {
@@ -9,10 +10,13 @@ const requireClient = (req, res, next) => {
   next();
 };
 
-router.get('/home', requireClient, (req, res) => {
+router.get('/home', requireClient, async (req, res) => {
+  // Busca el usuario en la base para obtener la foto
+  const user = await User.findById(req.session.user.id);
   res.render('client/home', {
     title: 'Home Cliente',
-    layout: 'layouts/layout'
+    layout: 'layouts/layout',
+    user // lo mandas completo
   });
 });
 
