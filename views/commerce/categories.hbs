@@ -1,0 +1,60 @@
+<div class="mt-4">
+  <h2>Categorías del comercio</h2>
+  <p class="text-muted">Gestiona las categorías de tus productos (ej. Hamburguesas, Bebidas, Postres).</p>
+
+  <div class="row">
+    <div class="col-md-5">
+      <div class="card mb-3">
+        <div class="card-header">Nueva categoría</div>
+        <div class="card-body">
+          <form method="POST" action="/commerce/categories">
+            <div class="mb-3">
+              <label class="form-label">Nombre</label>
+              <input type="text" name="nombre" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Descripción</label>
+              <textarea name="descripcion" class="form-control" rows="3" placeholder="Opcional"></textarea>
+            </div>
+            <button type="submit" class="btn btn-success w-100">Agregar categoría</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-7">
+      <div class="card mb-3">
+        <div class="card-header">Listado de categorías</div>
+        <div class="card-body p-0">
+          {{#if categories.length}}
+            <table class="table table-striped mb-0">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Descripción</th>
+                  <th style="width:120px;">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {{#each categories}}
+                  <tr>
+                    <td>{{this.nombre}}</td>
+                    <td>{{this.descripcion}}</td>
+                    <td>
+                      <a href="/commerce/categories/{{this._id}}/edit" class="btn btn-sm btn-outline-primary">Editar</a>
+                      <a href="/commerce/categories/{{this._id}}/delete" class="btn btn-sm btn-outline-danger">
+                        Eliminar
+                      </a>
+                    </td>
+                  </tr>
+                {{/each}}
+              </tbody>
+            </table>
+          {{else}}
+            <p class="p-3 text-muted mb-0">Aún no tienes categorías registradas.</p>
+          {{/if}}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

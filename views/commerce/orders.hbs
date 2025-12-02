@@ -1,0 +1,67 @@
+<div class="mt-4">
+  <h2>Pedidos del comercio</h2>
+  <p class="text-muted">Listado de pedidos que han realizado a tu comercio.</p>
+
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span>Pedidos recientes</span>
+      <div>
+        <span class="badge bg-warning text-dark me-1">Pendientes: {{stats.pendientes}}</span>
+        <span class="badge bg-info text-dark me-1">En proceso: {{stats.enProceso}}</span>
+        <span class="badge bg-success">Completados: {{stats.completados}}</span>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      {{#if orders.length}}
+        <table class="table table-striped mb-0 align-middle">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Dirección</th>
+              <th>Estado</th>
+              <th>Total</th>
+              <th>Fecha</th>
+              <th style="width:150px;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each orders}}
+              <tr>
+                <td>{{this.cliente.nombre}} {{this.cliente.apellido}}</td>
+                <td>{{this.direccion.nombre}} - {{this.direccion.descripcion}}</td>
+                <td>
+                  {{#ifEquals this.estado "pendiente"}}
+                    <span class="badge bg-warning text-dark">Pendiente</span>
+                  {{/ifEquals}}
+                  {{#ifEquals this.estado "en proceso"}}
+                    <span class="badge bg-info text-dark">En proceso</span>
+                  {{/ifEquals}}
+                  {{#ifEquals this.estado "completado"}}
+                    <span class="badge bg-success">Completado</span>
+                  {{/ifEquals}}
+                </td>
+                <td>RD$ {{this.total}}</td>
+                <td>{{this.creadoEn}}</td>
+                <td>
+                  <a href="/commerce/orders/{{this._id}}" class="btn btn-sm btn-outline-primary mb-1">Ver detalle</a>
+                  {{#ifEquals this.estado "pendiente"}}
+                    <form method="POST" action="/commerce/orders/{{this._id}}/process" class="d-inline">
+                      <button type="submit" class="btn btn-sm btn-outline-warning">Marcar en proceso</button>
+                    </form>
+                  {{/ifEquals}}
+                  {{#ifEquals this.estado "en proceso"}}
+                    <form method="POST" action="/commerce/orders/{{this._id}}/complete" class="d-inline">
+                      <button type="submit" class="btn btn-sm btn-outline-success">Completar</button>
+                    </form>
+                  {{/ifEquals}}
+                </td>
+              </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      {{else}}
+        <p class="p-3 text-muted mb-0">Aún no tienes pedidos registrados.</p>
+      {{/if}}
+    </div>
+  </div>
+</div>

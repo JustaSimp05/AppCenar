@@ -17,12 +17,14 @@ const router = express.Router();
 // Middleware de protección para rol cliente
 const requireClient = (req, res, next) => {
   if (!req.session.user || req.session.user.rol !== 'cliente') {
+    if (req.xhr || req.headers['accept']?.includes('application/json')) {
+      return res.status(401).json({ success: false, message: 'No autorizado' });
+    }
     req.flash('error_msg', 'Acceso no autorizado');
     return res.redirect('/auth/login');
   }
   next();
 };
-
 // Configuración de multer para subida de fotos de perfil
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -85,7 +87,7 @@ router.get('/commerces/:typeId', requireClient, async (req, res) => {
     const favoritos = await Favorite.find({ 
       cliente: req.session.user.id 
     }).select('comercio');
-    const favoritosSet = favoritos.map(fav => fav.comercio.toString());
+    const favoritosSet = favoritos.map(fav => fav.comercio?.toString() || "");
 
     res.render('client/commerces', { 
       title: `Comercios - ${commerceType.nombre}`,
@@ -125,7 +127,7 @@ router.get('/search-commerces', requireClient, async (req, res) => {
     const favoritos = await Favorite.find({ 
       cliente: req.session.user.id 
     }).select('comercio');
-    const favoritosSet = favoritos.map(fav => fav.comercio.toString());
+    const favoritosSet = favoritos.map(fav => fav.comercio?.toString() || "");
 
     res.json({
       commerces,
@@ -175,16 +177,27 @@ router.get('/catalog/:commerceId', requireClient, async (req, res) => {
 
     // Carrito de sesión
     const carrito = req.session.carrito || [];
+const subtotal = carrito.reduce((sum, p) => sum + p.price * p.quantity, 0);
 
-    res.render('client/catalog', { 
-      title: `Catálogo - ${commerce.nombreComercio}`,
-      layout: 'layouts/layout',
-      commerce,
-      categories: categoriesWithProducts,
-      productsWithoutCategory,
-      carrito,
-      user: req.session.user
-    });
+const favoritos = await Favorite.find({ 
+  cliente: req.session.user.id 
+}).select('comercio');
+
+const favoritosSet = favoritos.map(f => f.comercio.toString());
+const isFavorite = favoritosSet.includes(commerceId);
+
+res.render('client/catalog', { 
+  carrito,
+  subtotal,
+  title: `Catálogo - ${commerce.nombreComercio}`,
+  layout: 'layouts/layout',
+  commerce,
+  categories: categoriesWithProducts,
+  productsWithoutCategory,
+  user: req.session.user,
+  favoritosSet,        
+  isFavorite           
+});
   } catch (error) {
     console.error('Error en catálogo:', error);
     req.flash('error_msg', 'Error al cargar catálogo');
@@ -195,22 +208,17 @@ router.get('/catalog/:commerceId', requireClient, async (req, res) => {
 // ===== ACTUALIZAR CARRITO (AJAX) =====
 router.post('/cart', requireClient, async (req, res) => {
   try {
-    const { action, productId, quantity = 1 } = req.body;
+    const { action, productId, quantity } = req.body;
     let carrito = req.session.carrito || [];
 
+    const index = carrito.findIndex(p => p.productId === productId);
+
+    // === AGREGAR ===
     if (action === 'add') {
-      // Verificar si ya existe en carrito
-      const existingProduct = carrito.find(p => p.productId === productId);
-      
-      if (existingProduct) {
-        existingProduct.quantity += parseInt(quantity);
+      if (index !== -1) {
+        carrito[index].quantity += 1;
       } else {
-        // Buscar producto en DB para obtener datos completos
         const product = await Product.findById(productId).populate('categoria', 'nombre');
-        
-        if (!product) {
-          return res.status(404).json({ error: 'Producto no encontrado' });
-        }
 
         carrito.push({
           productId: productId,
@@ -220,41 +228,47 @@ router.post('/cart', requireClient, async (req, res) => {
           photo: product.foto,
           category: product.categoria?.nombre || 'Sin categoría',
           commerceId: product.comercio,
-          quantity: parseInt(quantity)
+          quantity: 1
         });
       }
-    } else if (action === 'remove') {
-      carrito = carrito.filter(p => p.productId !== productId);
-    } else if (action === 'update') {
-      const productIndex = carrito.findIndex(p => p.productId === productId);
-      if (productIndex !== -1) {
-        carrito[productIndex].quantity = parseInt(quantity);
-        if (carrito[productIndex].quantity <= 0) {
-          carrito.splice(productIndex, 1);
+    }
+
+    // === INCREMENTAR ===
+    if (action === 'increment') {
+      if (index !== -1) carrito[index].quantity += 1;
+    }
+
+    // === DECREMENTAR ===
+    if (action === 'decrement') {
+      if (index !== -1) {
+        carrito[index].quantity -= 1;
+
+        if (carrito[index].quantity <= 0) {
+          carrito.splice(index, 1);
         }
       }
     }
 
-    // Limpiar carrito de productos con cantidad 0
-    carrito = carrito.filter(p => p.quantity > 0);
+    // === ELIMINAR COMPLETO ===
+    if (action === 'remove') {
+      carrito = carrito.filter(p => p.productId !== productId);
+    }
+
+    // === CALCULAR SUBTOTAL ===
+    const subtotal = carrito.reduce((sum, p) => sum + p.price * p.quantity, 0);
 
     req.session.carrito = carrito;
-    
-    const subtotal = carrito.reduce((sum, p) => sum + (p.price * p.quantity), 0);
-    const totalItems = carrito.reduce((sum, p) => sum + p.quantity, 0);
 
     res.json({
       success: true,
       carrito,
       subtotal,
-      totalItems
+      totalItems: carrito.reduce((sum, p) => sum + p.quantity, 0)
     });
+
   } catch (error) {
     console.error('Error actualizando carrito:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Error al actualizar carrito' 
-    });
+    res.status(500).json({ success: false, error: 'Error al actualizar carrito' });
   }
 });
 
@@ -654,9 +668,16 @@ router.post('/addresses/:id/delete', requireClient, async (req, res) => {
 // ===== MIS FAVORITOS =====
 router.get('/favorites', requireClient, async (req, res) => {
   try {
-    const favorites = await Favorite.find({ cliente: req.session.user.id })
-      .populate('commerce', 'nombreComercio logoComercio telefono horaApertura horaCierre')
-      .sort({ createdAt: -1 });
+    // Buscar favoritos del usuario
+    let favorites = await Favorite.find({ cliente: req.session.user.id })
+      .populate('comercio', 'nombreComercio logoComercio telefono horaApertura horaCierre')
+      .lean(); // <-- NECESARIO para poder mapear el resultado
+
+    // Convertir "comercio" -> "commerce" (alias)
+    favorites = favorites.map(fav => ({
+      ...fav,
+      commerce: fav.comercio, // alias correcto
+    }));
 
     res.render('client/favorites', {
       title: 'Mis Favoritos - AppCenar',
@@ -664,6 +685,7 @@ router.get('/favorites', requireClient, async (req, res) => {
       favorites,
       user: req.session.user
     });
+
   } catch (error) {
     console.error('Error en mis favoritos:', error);
     req.flash('error_msg', 'Error al cargar favoritos');
@@ -671,48 +693,48 @@ router.get('/favorites', requireClient, async (req, res) => {
   }
 });
 
+
 // Toggle favorito (agregar/remover)
 router.post('/favorites', requireClient, async (req, res) => {
   try {
     const { commerceId, action } = req.body;
-    const clienteId = req.session.user.id;
+    const clienteId = req.session.user?.id;
 
-    if (action === 'add') {
-      // Verificar si ya existe
-      const existingFavorite = await Favorite.findOne({ 
-        cliente: clienteId, 
-        commerce: commerceId 
-      });
+    if (!clienteId) {
+      return res.status(401).json({ success: false, message: "No autenticado" });
+    }
+    if (!commerceId) {
+      return res.status(400).json({ success: false, message: "commerceId requerido" });
+    }
 
-      if (!existingFavorite) {
-        await Favorite.create({ cliente: clienteId, commerce: commerceId });
-        res.json({ 
-          success: true, 
-          message: 'Comercio agregado a favoritos' 
-        });
-      } else {
-        res.json({ 
-          success: false, 
-          message: 'Ya tienes este comercio en favoritos' 
+    // --- AGREGAR FAVORITO ---
+    if (action === "add") {
+      const exists = await Favorite.findOne({ cliente: clienteId, comercio: commerceId });
+
+      if (!exists) {
+        await Favorite.create({
+          cliente: clienteId,
+          comercio: commerceId
         });
       }
-    } else if (action === 'remove') {
-      await Favorite.findOneAndDelete({ 
-        cliente: clienteId, 
-        commerce: commerceId 
-      });
-      res.json({ 
-        success: true, 
-        message: 'Comercio removido de favoritos' 
-      });
+
+      return res.json({ success: true, action: "added" });
     }
+
+    // --- REMOVER FAVORITO ---
+    if (action === "remove") {
+      await Favorite.findOneAndDelete({ cliente: clienteId, comercio: commerceId });
+      return res.json({ success: true, action: "removed" });
+    }
+
+    return res.status(400).json({ success: false, message: "Acción no válida" });
+
   } catch (error) {
-    console.error('Error en favorito:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Error al procesar favorito' 
-    });
+    console.error("Error al procesar favorito:", error);
+    return res.status(500).json({ success: false, message: "Error en el servidor" });
   }
 });
+
+
 
 module.exports = router;
