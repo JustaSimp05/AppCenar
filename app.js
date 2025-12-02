@@ -54,6 +54,10 @@ hbs.registerHelper('ifEquals', function (a, b, opts) {
   return opts.inverse(this);
 });
 
+hbs.registerHelper('eq', function (a, b) {
+  return a === b;
+});
+
 // Conexión a MongoDB
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/appcenar_dev')
   .then(() => console.log('✅ MongoDB conectado'))
