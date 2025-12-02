@@ -11,17 +11,45 @@
     <link href="/css/style.css" rel="stylesheet" />
 </head>
 <body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+            <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
         <div class="container">
             <a class="navbar-brand" href="/">AppCenar</a>
+
             {{#if user}}
+            {{#ifEquals user.rol "cliente"}}
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#clientNav">
+                <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="clientNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                    <a class="nav-link" href="/client/home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                    <a class="nav-link" href="/client/profile">Mi perfil</a>
+                    </li>
+                    <li class="nav-item">
+                    <a class="nav-link" href="/client/orders">Mis pedidos</a>
+                    </li>
+                    <li class="nav-item">
+                    <a class="nav-link" href="/client/addresses">Mis direcciones</a>
+                    </li>
+                    <li class="nav-item">
+                    <a class="nav-link" href="/client/favorites">Mis favoritos</a>
+                    </li>
+                </ul>
+                </div>
+            {{/ifEquals}}
+
             <div class="d-flex">
                 <span class="text-white me-3">Hola, {{user.username}}</span>
                 <a href="/auth/logout" class="btn btn-outline-light btn-sm">Cerrar sesión</a>
             </div>
             {{/if}}
         </div>
-    </nav>
+        </nav>
+
 
     <div class="container">
         {{#if success_msg}}

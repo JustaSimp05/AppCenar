@@ -1,0 +1,207 @@
+<div class="container mt-4">
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>{{commerceType.nombre}}</h2>
+        <a href="/client/home" class="btn btn-secondary">
+          <i class="fas fa-arrow-left me-1"></i>Volver al Home
+        </a>
+      </div>
+
+      <!-- Buscador -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="input-group">
+            <input type="text" id="busquedaComercio" class="form-control" 
+                   placeholder="Buscar comercios por nombre..." 
+                   value="{{query}}">
+            <button class="btn btn-primary" type="button" id="btnBuscar">
+              <i class="fas fa-search"></i> Buscar
+            </button>
+          </div>
+          <small class="text-muted">Total de comercios encontrados: <span id="totalComercios">{{comercios.length}}</span></small>
+        </div>
+      </div>
+
+      <!-- Mensaje si no hay comercios -->
+      {{#if (eq comercios.length 0)}}
+      <div class="alert alert-warning text-center">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        No se encontraron comercios de este tipo. Intenta con otro tipo o espera a que se activen.
+      </div>
+      {{else}}
+      <!-- Listado de comercios -->
+      <div class="row" id="listaComercios">
+        {{#each comercios}}
+        <div class="col-md-4 col-sm-6 mb-4">
+          <div class="card h-100 shadow-sm">
+            {{#if this.logoComercio}}
+            <img src="/{{this.logoComercio}}" class="card-img-top" alt="{{this.nombreComercio}}" 
+                 style="height: 200px; object-fit: cover;">
+            {{else}}
+            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                 style="height: 200px;">
+              <i class="fas fa-store fa-4x text-muted"></i>
+            </div>
+            {{/if}}
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">{{this.nombreComercio}}</h5>
+              <p class="card-text text-muted mb-2">
+                <i class="fas fa-tag me-1"></i>{{this.tipoComercio.nombre}}
+              </p>
+              <p class="card-text flex-grow-1">
+                <small class="text-muted">
+                  <i class="fas fa-clock me-1"></i>
+                  {{this.horaApertura}} - {{this.horaCierre}}
+                </small>
+              </p>
+              <div class="d-flex justify-content-between align-items-center mt-auto">
+                <button class="btn btn-outline-danger btn-sm toggle-favorito" 
+                        data-comercio="{{this._id}}"
+                        data-action="{{#if ../favoritosSet}}{{#if (includes ../favoritosSet this._id)}}remover{{else}}agregar{{/if}}{{else}}agregar{{/if}}">
+                  <i class="fas {{#if ../favoritosSet}}{{#if (includes ../favoritosSet this._id)}}fa-heart{{else}}fa-heart{{/if}}{{else}}fa-heart{{/if}}"></i>
+                  {{#if ../favoritosSet}}{{#if (includes ../favoritosSet this._id)}}Remover{{else}}Favorito{{/if}}{{else}}Favorito{{/if}}
+                </button>
+                <a href="/client/catalogo/{{this._id}}" class="btn btn-primary">
+                  <i class="fas fa-shopping-bag me-1"></i>Ver Menú
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+      {{/if}}
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Búsqueda en tiempo real
+  const inputBusqueda = document.getElementById('busquedaComercio');
+  const btnBuscar = document.getElementById('btnBuscar');
+
+  const buscarComercios = async (query) => {
+    const params = new URLSearchParams();
+    if (query) params.append('q', query);
+    params.append('tipo', '{{commerceType._id}}');
+
+    const response = await fetch(`/client/buscar-comercios?${params}`);
+    const data = await response.json();
+
+    const container = document.getElementById('listaComercios');
+    container.innerHTML = '';
+
+    if (data.comercios.length === 0) {
+      container.innerHTML = `
+        <div class="col-12">
+          <div class="alert alert-warning text-center">
+            <i class="fas fa-search me-2"></i>
+            No se encontraron comercios con "${query}". Intenta con otro término.
+          </div>
+        </div>
+      `;
+    } else {
+      data.comercios.forEach(comercio => {
+        const esFavorito = data.favoritosSet.includes(comercio._id.toString());
+        const iconoFavorito = esFavorito ? 'fa-heart' : 'fa-heart';
+        const textoFavorito = esFavorito ? 'Remover' : 'Favorito';
+
+        const cardHtml = `
+          <div class="col-md-4 col-sm-6 mb-4">
+            <div class="card h-100 shadow-sm">
+              ${comercio.logoComercio ? 
+                `<img src="/${comercio.logoComercio}" class="card-img-top" alt="${comercio.nombreComercio}" style="height: 200px; object-fit: cover;">` :
+                `<div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                   <i class="fas fa-store fa-4x text-muted"></i>
+                 </div>`
+              }
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title">${comercio.nombreComercio}</h5>
+                <p class="card-text text-muted mb-2">
+                  <i class="fas fa-tag me-1"></i>${comercio.tipoComercio.nombre}
+                </p>
+                <p class="card-text flex-grow-1">
+                  <small class="text-muted">
+                    <i class="fas fa-clock me-1"></i>
+                    ${comercio.horaApertura} - ${comercio.horaCierre}
+                  </small>
+                </p>
+                <div class="d-flex justify-content-between align-items-center mt-auto">
+                  <button class="btn btn-outline-danger btn-sm toggle-favorito" 
+                          data-comercio="${comercio._id}"
+                          data-action="${esFavorito ? 'remover' : 'agregar'}">
+                    <i class="fas ${iconoFavorito}"></i> ${textoFavorito}
+                  </button>
+                  <a href="/client/catalogo/${comercio._id}" class="btn btn-primary">
+                    <i class="fas fa-shopping-bag me-1"></i>Ver Menú
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        container.innerHTML += cardHtml;
+      });
+    }
+
+    document.getElementById('totalComercios').textContent = data.total;
+  };
+
+  inputBusqueda.addEventListener('input', function() {
+    buscarComercios(this.value);
+  });
+
+  btnBuscar.addEventListener('click', function() {
+    buscarComercios(inputBusqueda.value);
+  });
+
+  // Toggle favoritos
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.toggle-favorito')) {
+      const btn = e.target.closest('.toggle-favorito');
+      const comercioId = btn.dataset.comercio;
+      const action = btn.dataset.action;
+
+      fetch('/client/favoritos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ comercioId, action })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Actualizar botón visualmente
+          if (action === 'agregar') {
+            btn.innerHTML = '<i class="fas fa-heart"></i> Remover';
+            btn.dataset.action = 'remover';
+          } else {
+            btn.innerHTML = '<i class="far fa-heart"></i> Favorito';
+            btn.dataset.action = 'agregar';
+          }
+          // Mostrar mensaje
+          const alert = document.createElement('div');
+          alert.className = 'alert alert-success alert-dismissible fade show position-fixed';
+          alert.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 250px;';
+          alert.innerHTML = `
+            ${data.message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          `;
+          document.body.appendChild(alert);
+          
+          setTimeout(() => alert.remove(), 3000);
+        } else {
+          alert('Error: ' + data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Error al procesar favorito');
+      });
+    }
+  });
+});
+</script>

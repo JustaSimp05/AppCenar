@@ -8,15 +8,15 @@ const UserSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   passwordHash: { type: String, required: true },
   rol: { type: String, enum: ['cliente', 'delivery', 'comercio', 'admin'], required: true },
-  fotoPerfil: { type: String },           // ruta de la imagen subida (Multer se agregará luego)
-  nombreComercio: { type: String },       // solo para comercio
-  logoComercio: { type: String },         // solo para comercio
-  horaApertura: { type: String },         // solo para comercio
-  horaCierre: { type: String },           // solo para comercio
-  tipoComercio: { type: String },         // placeholder por ahora
+  fotoPerfil: { type: String }, // ruta imagen, Multer
+  nombreComercio: { type: String }, // solo para comercio
+  logoComercio: { type: String }, // solo para comercio
+  horaApertura: { type: String }, // solo para comercio
+  horaCierre: { type: String }, // solo para comercio
+  tipoComercio: { type: mongoose.Schema.Types.ObjectId, ref: 'CommerceType' },
   isActive: { type: Boolean, default: false },
   activationToken: { type: String },
-    resetPasswordToken: { type: String },
+  resetPasswordToken: { type: String },
   resetPasswordExpires: { type: Date },
   createdAt: { type: Date, default: Date.now }
 });

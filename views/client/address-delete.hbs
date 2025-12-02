@@ -1,0 +1,43 @@
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-7 col-md-9">
+      <div class="card shadow-sm border-danger">
+        <div class="card-header bg-danger text-white d-flex align-items-center">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          <h4 class="mb-0">Eliminar dirección</h4>
+        </div>
+
+        <div class="card-body">
+          <p class="lead mb-3">
+            ¿Está seguro que desea eliminar esta dirección?
+          </p>
+
+          <div class="border rounded p-3 mb-4 bg-light">
+            <h5 class="mb-1">
+              <i class="fas fa-map-marker-alt text-danger me-1"></i>
+              {{address.nombre}}
+            </h5>
+            <p class="mb-0 text-muted">{{address.descripcion}}</p>
+          </div>
+
+          <p class="text-muted mb-4">
+            Esta acción no se puede deshacer. Si la usas frecuentemente, considera mantenerla.
+          </p>
+
+          <form action="/client/addresses/{{address._id}}/delete" method="POST" class="d-flex justify-content-between">
+            <a href="/client/addresses" class="btn btn-outline-secondary">
+              <i class="fas fa-times me-1"></i> Cancelar
+            </a>
+            <button type="submit" class="btn btn-danger">
+              <i class="fas fa-trash-alt me-1"></i> Aceptar y eliminar
+            </button>
+          </form>
+        </div>
+
+        <div class="card-footer text-muted small">
+          Usuario: {{user.nombre}} {{user.apellido}}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

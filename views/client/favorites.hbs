@@ -1,0 +1,54 @@
+<div class="mt-4">
+  <h2>Mis favoritos</h2>
+  <hr>
+
+  {{#unless favorites.length}}
+    <div class="alert alert-info">
+      No tienes comercios favoritos todavía.
+    </div>
+  {{/unless}}
+
+  <div class="row">
+    {{#each favorites}}
+      <div class="col-md-4 mb-3">
+        <div class="card h-100">
+          {{#if commerce.logoComercio}}
+            <img src="/{{commerce.logoComercio}}" class="card-img-top" style="height: 180px; object-fit: cover;">
+          {{/if}}
+          <div class="card-body">
+            <h5 class="card-title">{{commerce.nombreComercio}}</h5>
+            <p class="card-text">
+              {{commerce.horaApertura}} - {{commerce.horaCierre}}<br>
+              Tel: {{commerce.telefono}}
+            </p>
+            <a href="/client/catalog/{{commerce._id}}" class="btn btn-primary btn-sm">Ver catálogo</a>
+            <button 
+              type="button" 
+              class="btn btn-outline-danger btn-sm ms-2"
+              onclick="toggleFavorite('{{commerce._id}}', 'remove')">
+              Quitar de favoritos
+            </button>
+          </div>
+        </div>
+      </div>
+    {{/each}}
+  </div>
+
+  <a href="/client/home" class="btn btn-secondary mt-3">Volver</a>
+</div>
+
+<script>
+async function toggleFavorite(commerceId, action) {
+  const res = await fetch('/client/favorites', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ commerceId, action })
+  });
+  const data = await res.json();
+  if (data.success) {
+    location.reload();
+  } else {
+    alert(data.message || 'Error al actualizar favorito');
+  }
+}
+</script>
