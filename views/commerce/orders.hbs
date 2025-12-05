@@ -27,8 +27,21 @@
           <tbody>
             {{#each orders}}
               <tr>
-                <td>{{this.cliente.nombre}} {{this.cliente.apellido}}</td>
-                <td>{{this.direccion.nombre}} - {{this.direccion.descripcion}}</td>
+                <td>
+                  {{#if this.cliente}}
+                    {{this.cliente.nombre}} {{this.cliente.apellido}}<br>
+                    <small class="text-muted">{{this.cliente.telefono}}</small>
+                  {{else}}
+                    <span class="text-muted">Sin datos</span>
+                  {{/if}}
+                </td>
+                <td>
+                  {{#if this.direccion}}
+                    {{this.direccion.nombre}} - {{this.direccion.descripcion}}
+                  {{else}}
+                    <span class="text-muted">Sin dirección</span>
+                  {{/if}}
+                </td>
                 <td>
                   {{#ifEquals this.estado "pendiente"}}
                     <span class="badge bg-warning text-dark">Pendiente</span>
@@ -43,7 +56,9 @@
                 <td>RD$ {{this.total}}</td>
                 <td>{{this.creadoEn}}</td>
                 <td>
-                  <a href="/commerce/orders/{{this._id}}" class="btn btn-sm btn-outline-primary mb-1">Ver detalle</a>
+                  <a href="/commerce/orders/{{this._id}}" class="btn btn-sm btn-outline-primary mb-1">
+                    Ver detalle
+                  </a>
                   {{#ifEquals this.estado "pendiente"}}
                     <form method="POST" action="/commerce/orders/{{this._id}}/process" class="d-inline">
                       <button type="submit" class="btn btn-sm btn-outline-warning">Marcar en proceso</button>

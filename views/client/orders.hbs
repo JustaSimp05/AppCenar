@@ -13,15 +13,15 @@
       <div class="col-md-4 mb-3">
         <div class="card h-100">
           <div class="card-body">
-            {{#if commerce.logoComercio}}
-              <img src="{{commerce.logoComercio}}" class="img-fluid mb-2" style="max-height: 80px; object-fit: contain;">
+            {{#if comercio.logoComercio}}
+              <img src="{{comercio.logoComercio}}" class="img-fluid mb-2" style="max-height: 80px; object-fit: contain;">
             {{/if}}
-            <h5 class="card-title">{{commerce.nombreComercio}}</h5>
+            <h5 class="card-title">{{comercio.nombreComercio}}</h5>
             <p class="card-text">
               Estado: <strong>{{estado}}</strong><br>
               Total: <strong>RD$ {{total}}</strong><br>
-              Productos: {{products.length}}<br>
-              Fecha: {{createdAt}}
+              Productos: {{productos.length}}<br>
+              Fecha: {{creadoEn}}
             </p>
             <a href="/client/orders/{{_id}}" class="btn btn-sm btn-primary">Ver detalle</a>
           </div>
