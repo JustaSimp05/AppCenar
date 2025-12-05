@@ -77,6 +77,12 @@ hbs.registerHelper("includes", function (array, value) {
   return array.includes(value.toString());
 });
 
+hbs.registerHelper('multiplyPercent', function (subtotal, itbis) {
+  if (typeof subtotal !== 'number' || typeof itbis !== 'number') return '';
+  const value = subtotal * itbis / 100;
+  return value.toFixed(2);
+});
+
 // Conexión a MongoDB
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/appcenar_dev')
   .then(() => console.log('✅ MongoDB conectado'))
