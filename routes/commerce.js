@@ -33,16 +33,26 @@ router.get('/home', requireCommerce, async (req, res) => {
   try {
     const commerce = await getCurrentCommerce(req);
 
-    const totalPedidos = await Order.countDocuments({ comercio: commerce._id });
-    const pendientes = await Order.countDocuments({ comercio: commerce._id, estado: 'pendiente' });
-    const enProceso = await Order.countDocuments({ comercio: commerce._id, estado: 'en proceso' });
-    const completados = await Order.countDocuments({ comercio: commerce._id, estado: 'completado' });
+    const orders = await Order.find({ comercio: commerce._id })
+      .populate('cliente', 'nombre apellido telefono')
+      .sort({ creadoEn: -1 });
+
+    const totalOrders = orders.length;
+    const pendientes  = orders.filter(o => o.estado === 'pendiente').length;
+    const enProceso   = orders.filter(o => o.estado === 'en proceso').length;
+    const completados = orders.filter(o => o.estado === 'completado').length;
 
     res.render('commerce/home', {
-      title: 'Home Comercio',
+      title: 'Home del comercio',
       layout: 'layouts/layout',
-      commerce,
-      stats: { totalPedidos, pendientes, enProceso, completados }
+      commerce,      // el objeto de Commerce
+      orders,
+      stats: {
+        totalOrders,
+        pending: pendientes,
+        inProcess: enProceso,
+        completed: completados
+      }
     });
   } catch (err) {
     console.error(err);
@@ -50,6 +60,7 @@ router.get('/home', requireCommerce, async (req, res) => {
     res.redirect('/auth/login');
   }
 });
+
 
 /* =========================
    PERFIL COMERCIO
@@ -421,8 +432,8 @@ router.get('/orders', requireCommerce, async (req, res) => {
     const commerce = await getCurrentCommerce(req);
 
     const orders = await Order.find({ comercio: commerce._id })
-      .populate('cliente')
-      .populate('direccion')
+      .populate('cliente', 'nombre apellido telefono')
+      .populate('direccion', 'nombre descripcion')
       .sort({ creadoEn: -1 });
 
     const pendientes = orders.filter(o => o.estado === 'pendiente').length;
@@ -442,6 +453,7 @@ router.get('/orders', requireCommerce, async (req, res) => {
   }
 });
 
+
 // GET detalle pedido
 router.get('/orders/:id', requireCommerce, async (req, res) => {
   try {
@@ -451,9 +463,10 @@ router.get('/orders/:id', requireCommerce, async (req, res) => {
       _id: req.params.id,
       comercio: commerce._id
     })
-      .populate('cliente')
-      .populate('direccion')
-      .populate('productos.producto');
+      .populate('cliente', 'nombre apellido telefono correo')
+      .populate('direccion', 'nombre descripcion')
+      .populate('productos.producto', 'nombre descripcion precio foto')
+      .populate('delivery', 'nombre apellido telefono');
 
     if (!order) {
       req.flash('error_msg', 'Pedido no encontrado');
@@ -471,6 +484,7 @@ router.get('/orders/:id', requireCommerce, async (req, res) => {
     res.redirect('/commerce/orders');
   }
 });
+
 
 // Marcar pedido en proceso
 router.post('/orders/:id/process', requireCommerce, async (req, res) => {

@@ -338,19 +338,19 @@ router.post('/order/create', requireClient, [
 
     // Crear productos del pedido
     const orderProducts = req.session.carrito.map(item => ({
-      product: item.productId,
-      quantity: item.quantity
+      producto:  item.productId,
+      cantidad:  item.quantity
     }));
 
     const newOrder = new Order({
-      cliente: req.session.user.id,
-      commerce: req.session.carrito[0].commerceId,
-      address: addressId,
-      products: orderProducts,
+      cliente:   req.session.user.id,
+      comercio:  req.session.carrito[0].commerceId,
+      direccion: addressId,
+      productos: orderProducts,          // ojo: producto / cantidad
       subtotal,
       itbis,
       total,
-      state: 'pending'
+      estado: 'pendiente'                // debe ser uno de tu enum
     });
 
     await newOrder.save();
@@ -438,9 +438,10 @@ router.post('/profile', requireClient, [
 router.get('/orders', requireClient, async (req, res) => {
   try {
     const orders = await Order.find({ cliente: req.session.user.id })
-      .populate('commerce', 'nombreComercio logoComercio')
-      .populate('products.product', 'nombre foto precio')
-      .sort({ createdAt: -1 });
+      .populate('comercio', 'nombreComercio logoComercio')
+      .populate('productos.producto', 'nombre foto precio')
+      .sort({ creadoEn: -1 });
+
 
     res.render('client/orders', {
       title: 'Mis Pedidos - AppCenar',
@@ -464,9 +465,9 @@ router.get('/orders/:orderId', requireClient, async (req, res) => {
       cliente: req.session.user.id 
     })
       .populate('cliente', 'nombre apellido')
-      .populate('commerce', 'nombreComercio logoComercio')
-      .populate('address', 'nombre descripcion')
-      .populate('products.product', 'nombre foto precio')
+      .populate('comercio', 'nombreComercio logoComercio')
+      .populate('direccion', 'nombre descripcion')
+      .populate('productos.producto', 'nombre foto precio')
       .populate('delivery', 'nombre apellido telefono');
 
     if (!order) {

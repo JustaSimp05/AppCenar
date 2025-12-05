@@ -96,23 +96,22 @@
               </div>
             </td>
             <td>
-              {{#ifEquals this.state 'pending'}}
+              {{#ifEquals this.estado "pendiente"}}
                 <span class="badge bg-warning text-dark">Pendiente</span>
               {{/ifEquals}}
-              {{#ifEquals this.state 'in_process'}}
+              {{#ifEquals this.estado "en proceso"}}
                 <span class="badge bg-info text-dark">En proceso</span>
               {{/ifEquals}}
-              {{#ifEquals this.state 'completed'}}
+              {{#ifEquals this.estado "completado"}}
                 <span class="badge bg-success">Completado</span>
               {{/ifEquals}}
             </td>
             <td>
               <span class="fw-semibold">RD$ {{this.total}}</span>
             </td>
-            <td>{{this.totalProducts}}</td>
+            <td>{{this.productos.length}}</td>
             <td>
-              <div>{{this.createdAtFormatted}}</div>
-              <small class="text-muted">{{this.createdTimeFormatted}}</small>
+              <div>{{this.creadoEn}}</div>
             </td>
             <td>
               {{#if this.cliente}}

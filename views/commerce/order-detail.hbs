@@ -1,6 +1,6 @@
 <div class="mb-3">
-  <a href="/commerce/home" class="btn btn-outline-secondary btn-sm">
-    <i class="fas fa-arrow-left me-1"></i> Volver al Home del comercio
+  <a href="/commerce/orders" class="btn btn-outline-secondary btn-sm">
+    <i class="fas fa-arrow-left me-1"></i> Volver a los pedidos
   </a>
 </div>
 
@@ -14,17 +14,17 @@
             Pedido #{{order._id}}
           </h4>
           <small class="text-muted">
-            Fecha: {{order.createdAtFormatted}} • Hora: {{order.createdTimeFormatted}}
+            Fecha y hora: {{order.creadoEn}}
           </small>
         </div>
         <div>
-          {{#ifEquals order.state 'pending'}}
+          {{#ifEquals order.estado 'pendiente'}}
             <span class="badge bg-warning text-dark fs-6">Pendiente</span>
           {{/ifEquals}}
-          {{#ifEquals order.state 'in_process'}}
+          {{#ifEquals order.estado 'en proceso'}}
             <span class="badge bg-info text-dark fs-6">En proceso</span>
           {{/ifEquals}}
-          {{#ifEquals order.state 'completed'}}
+          {{#ifEquals order.estado 'completado'}}
             <span class="badge bg-success fs-6">Completado</span>
           {{/ifEquals}}
         </div>
@@ -32,33 +32,12 @@
 
       <div class="card-body">
         <div class="mb-3">
-          <h5 class="mb-1">Comercio</h5>
-          <div class="d-flex align-items-center">
-            {{#if order.commerce.logoComercio}}
-              <img src="{{order.commerce.logoComercio}}" alt="Logo" class="rounded me-2"
-                   style="width: 50px; height: 50px; object-fit: cover;">
-            {{else}}
-              <div class="rounded bg-primary text-white d-flex align-items-center justify-content-center me-2"
-                   style="width: 50px; height: 50px;">
-                <i class="fas fa-store"></i>
-              </div>
-            {{/if}}
-            <div>
-              <div class="fw-semibold">{{order.commerce.nombreComercio}}</div>
-              <small class="text-muted">
-                Horario: {{order.commerce.horaApertura}} - {{order.commerce.horaCierre}}
-              </small>
-            </div>
-          </div>
-        </div>
-
-        <hr>
-
-        <div class="mb-3">
           <h5 class="mb-1">Cliente</h5>
           {{#if order.cliente}}
             <div>{{order.cliente.nombre}} {{order.cliente.apellido}}</div>
-            <div class="text-muted small">{{order.cliente.telefono}} • {{order.cliente.correo}}</div>
+            <div class="text-muted small">
+              {{order.cliente.telefono}} • {{order.cliente.correo}}
+            </div>
           {{else}}
             <span class="text-muted">Información de cliente no disponible</span>
           {{/if}}
@@ -66,9 +45,9 @@
 
         <div class="mb-3">
           <h5 class="mb-1">Dirección de entrega</h5>
-          {{#if order.address}}
-            <div class="fw-semibold">{{order.address.nombre}}</div>
-            <div class="text-muted">{{order.address.descripcion}}</div>
+          {{#if order.direccion}}
+            <div class="fw-semibold">{{order.direccion.nombre}}</div>
+            <div class="text-muted">{{order.direccion.descripcion}}</div>
           {{else}}
             <span class="text-muted">Sin dirección asociada</span>
           {{/if}}
@@ -78,7 +57,7 @@
 
         <h5 class="mb-3">Productos del pedido</h5>
 
-        {{#if order.products.length}}
+        {{#if order.productos.length}}
           <div class="table-responsive">
             <table class="table align-middle">
               <thead class="table-light">
@@ -90,12 +69,12 @@
                 </tr>
               </thead>
               <tbody>
-                {{#each order.products}}
+                {{#each order.productos}}
                   <tr>
                     <td>
                       <div class="d-flex align-items-center">
-                        {{#if this.product.foto}}
-                          <img src="{{this.product.foto}}" alt="{{this.product.nombre}}" class="rounded me-2"
+                        {{#if this.producto.foto}}
+                          <img src="{{this.producto.foto}}" alt="{{this.producto.nombre}}" class="rounded me-2"
                                style="width: 50px; height: 50px; object-fit: cover;">
                         {{else}}
                           <div class="rounded bg-secondary text-white d-flex align-items-center justify-content-center me-2"
@@ -104,14 +83,14 @@
                           </div>
                         {{/if}}
                         <div>
-                          <div class="fw-semibold">{{this.product.nombre}}</div>
-                          <small class="text-muted">{{this.product.descripcion}}</small>
+                          <div class="fw-semibold">{{this.producto.nombre}}</div>
+                          <small class="text-muted">{{this.producto.descripcion}}</small>
                         </div>
                       </div>
                     </td>
-                    <td>RD$ {{this.product.precio}}</td>
-                    <td>{{this.quantity}}</td>
-                    <td>RD$ {{this.subtotal}}</td>
+                    <td>RD$ {{this.producto.precio}}</td>
+                    <td>{{this.cantidad}}</td>
+                    <td>RD$ {{multiply this.producto.precio this.cantidad}}</td>
                   </tr>
                 {{/each}}
               </tbody>
@@ -134,16 +113,16 @@
       <div class="card-body">
         <div class="d-flex justify-content-between mb-2">
           <span>Subtotal:</span>
-          <span>RD$ {{order.subtotalFormatted}}</span>
+          <span>RD$ {{order.subtotal}}</span>
         </div>
         <div class="d-flex justify-content-between mb-2">
           <span>ITBIS ({{order.itbis}}%):</span>
-          <span>RD$ {{order.itbisAmountFormatted}}</span>
+          <span>RD$ {{multiplyPercent order.subtotal order.itbis}}</span>
         </div>
         <hr>
         <div class="d-flex justify-content-between mb-2 fw-semibold">
           <span>Total:</span>
-          <span>RD$ {{order.totalFormatted}}</span>
+          <span>RD$ {{order.total}}</span>
         </div>
       </div>
     </div>
@@ -155,13 +134,13 @@
       <div class="card-body">
         <p class="mb-2">
           Estado actual:
-          {{#ifEquals order.state 'pending'}}
+          {{#ifEquals order.estado 'pendiente'}}
             <span class="badge bg-warning text-dark">Pendiente</span>
           {{/ifEquals}}
-          {{#ifEquals order.state 'in_process'}}
+          {{#ifEquals order.estado 'en proceso'}}
             <span class="badge bg-info text-dark">En proceso</span>
           {{/ifEquals}}
-          {{#ifEquals order.state 'completed'}}
+          {{#ifEquals order.estado 'completado'}}
             <span class="badge bg-success">Completado</span>
           {{/ifEquals}}
         </p>
@@ -176,7 +155,7 @@
           {{/if}}
         </div>
 
-        {{#ifEquals order.state 'pending'}}
+        {{#ifEquals order.estado 'pendiente'}}
           <form method="POST" action="/commerce/orders/{{order._id}}/assign-delivery">
             <button type="submit" class="btn btn-primary w-100">
               <i class="fas fa-motorcycle me-1"></i> Asignar delivery y poner en proceso
