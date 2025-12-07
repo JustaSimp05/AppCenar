@@ -1,4 +1,5 @@
 const express = require('express');
+const User = require('../models/User');
 const router = express.Router();
 
 const requireDelivery = (req, res, next) => {
@@ -9,10 +10,12 @@ const requireDelivery = (req, res, next) => {
   next();
 };
 
-router.get('/home', requireDelivery, (req, res) => {
+router.get('/home', requireDelivery, async (req, res) => {
+  const user = await User.findById(req.session.user.id);
   res.render('delivery/home', {
     title: 'Home Delivery',
-    layout: 'layouts/layout'
+    layout: 'layouts/layout',
+    user
   });
 });
 

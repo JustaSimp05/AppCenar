@@ -1,0 +1,27 @@
+<div class="mt-4">
+  <h2>Eliminar producto</h2>
+  <div class="card mt-3">
+    <div class="card-body">
+      <p class="fs-5">
+        ¿Está seguro que desea eliminar este producto?
+      </p>
+      <p>
+        <strong>Nombre:</strong> {{product.nombre}}<br>
+        <strong>Categoría:</strong> {{product.categoria.nombre}}<br>
+        <strong>Precio:</strong> RD$ {{product.precio}}
+      </p>
+
+      <div class="d-flex justify-content-between mt-4">
+        <a href="/commerce/products" class="btn btn-secondary">
+          Cancelar
+        </a>
+
+        <form method="POST" action="/commerce/products/{{product._id}}/delete">
+          <button type="submit" class="btn btn-danger">
+            Aceptar y eliminar
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

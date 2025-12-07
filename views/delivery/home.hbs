@@ -1,5 +1,12 @@
-<div class="mt-4">
+<div class="mt-4 text-center">
   <h2>Home Delivery</h2>
-  <p>Aquí irán los pedidos asignados (placeholder).</p>
-  <p>Usuario: {{user.username}}</p>
+  <p>Estás logueado como: {{user.username}}</p>
+
+  <div class="mt-3">
+    {{#if user.fotoPerfil}}
+      <img src="{{user.fotoPerfil}}" alt="Foto de perfil" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;">
+    {{else}}
+      <img src="/img/default_avatar.png" alt="Sin foto" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;">
+    {{/if}}
+  </div>
 </div>

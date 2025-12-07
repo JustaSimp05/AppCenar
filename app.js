@@ -17,6 +17,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
 // Sesiones
 app.use(session({
@@ -51,6 +52,35 @@ hbs.registerHelper('ifEquals', function (a, b, opts) {
     return opts.fn(this);
   }
   return opts.inverse(this);
+});
+
+hbs.registerHelper('eq', function (a, b) {
+  return a === b;
+});
+
+hbs.registerHelper('json', function (context) {
+  return JSON.stringify(context);
+});
+
+hbs.registerHelper("multiply", function (a, b) {
+  return a * b;
+});
+
+hbs.registerHelper("includes", function (array, value) {
+  if (!Array.isArray(array)) return false;
+  return array.includes(value.toString());
+});
+
+hbs.registerHelper("includes", function (array, value) {
+  if (!Array.isArray(array)) return false;     // evita que explote
+  if (value == null) return false;             // evita error toString
+  return array.includes(value.toString());
+});
+
+hbs.registerHelper('multiplyPercent', function (subtotal, itbis) {
+  if (typeof subtotal !== 'number' || typeof itbis !== 'number') return '';
+  const value = subtotal * itbis / 100;
+  return value.toFixed(2);
 });
 
 // Conexión a MongoDB
