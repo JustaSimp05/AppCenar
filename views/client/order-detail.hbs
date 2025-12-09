@@ -1,6 +1,6 @@
 <div class="mb-3">
-  <a href="/commerce/orders" class="btn btn-outline-secondary btn-sm">
-    <i class="fas fa-arrow-left me-1"></i> Volver a los pedidos
+  <a href="/client/orders" class="btn btn-outline-secondary btn-sm">
+    <i class="fas fa-arrow-left me-1"></i> Volver a mis pedidos
   </a>
 </div>
 
@@ -32,14 +32,23 @@
 
       <div class="card-body">
         <div class="mb-3">
-          <h5 class="mb-1">Cliente</h5>
-          {{#if order.cliente}}
-            <div>{{order.cliente.nombre}} {{order.cliente.apellido}}</div>
-            <div class="text-muted small">
-              {{order.cliente.telefono}} • {{order.cliente.correo}}
+          <h5 class="mb-1">Comercio</h5>
+          {{#if order.comercio}}
+            <div class="d-flex align-items-center">
+              {{#if order.comercio.logoComercio}}
+                <img src="{{order.comercio.logoComercio}}" alt="{{order.comercio.nombreComercio}}"
+                     class="rounded me-2"
+                     style="width: 48px; height: 48px; object-fit: cover;">
+              {{/if}}
+              <div>
+                <div class="fw-semibold">{{order.comercio.nombreComercio}}</div>
+                <div class="text-muted small">
+                  {{order.comercio.telefono}} • {{order.comercio.correo}}
+                </div>
+              </div>
             </div>
           {{else}}
-            <span class="text-muted">Información de cliente no disponible</span>
+            <span class="text-muted">Información de comercio no disponible</span>
           {{/if}}
         </div>
 
@@ -129,7 +138,7 @@
 
     <div class="card shadow-sm">
       <div class="card-header">
-        <h5 class="mb-0">Estado y delivery</h5>
+        <h5 class="mb-0">Estado del pedido</h5>
       </div>
       <div class="card-body">
         <p class="mb-2">
@@ -145,27 +154,17 @@
           {{/ifEquals}}
         </p>
 
-        <div class="mb-3">
-          <h6 class="mb-1">Delivery asignado</h6>
-          {{#if order.delivery}}
+        {{#if order.delivery}}
+          <div class="mt-2">
+            <h6 class="mb-1">Delivery</h6>
             <div>{{order.delivery.nombre}} {{order.delivery.apellido}}</div>
             <div class="text-muted small">{{order.delivery.telefono}}</div>
-          {{else}}
-            <span class="text-muted">Aún no hay delivery asignado.</span>
-          {{/if}}
-        </div>
+          </div>
+        {{/if}}
 
-        {{#ifEquals order.estado 'pendiente'}}
-          <form method="POST" action="/commerce/orders/{{order._id}}/assign-delivery">
-            <button type="submit" class="btn btn-primary w-100">
-              <i class="fas fa-motorcycle me-1"></i> Asignar delivery y poner en proceso
-            </button>
-          </form>
-        {{else}}
-          <small class="text-muted">
-            El pedido ya no está pendiente, no se puede asignar un nuevo delivery desde aquí.
-          </small>
-        {{/ifEquals}}
+        <small class="text-muted d-block mt-3">
+          Si tienes dudas con este pedido, contacta directamente al comercio.
+        </small>
       </div>
     </div>
   </div>

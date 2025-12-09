@@ -13,6 +13,10 @@ const UserSchema = new mongoose.Schema({
   logoComercio: { type: String }, // solo para comercio
   horaApertura: { type: String }, // solo para comercio
   horaCierre: { type: String }, // solo para comercio
+    estadoDelivery: {
+    type: String,
+    enum: ['disponible', 'ocupado'],
+    default: 'disponible'},
   tipoComercio: { type: mongoose.Schema.Types.ObjectId, ref: 'CommerceType' },
   isActive: { type: Boolean, default: false },
   activationToken: { type: String },
