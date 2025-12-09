@@ -418,7 +418,7 @@ router.post(
 
       const activationLink = `${req.protocol}://${req.get(
         'host'
-      )}/auth/activate/${activationToken}`;
+      )}/auth/activate-commerce/${activationToken}`;
 
       await sendMail({
         to: correo,
@@ -498,11 +498,11 @@ router.get('/activate/:token', async (req, res) => {
 
 // En el navegador ve a:
 
-// http://localhost:3000/auth/force-activate/TU_USERNAME
+// http://localhost:3000/auth/c-activate/TU_USERNAME
 
 // Ejemplo, si tu usuario es rafa:
 
-// http://localhost:3000/auth/force-activate/rafa
+// http://localhost:3000/auth/c-activate/rafa
 
 // Si existe, verás un mensaje en la página tipo:
 
