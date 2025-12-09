@@ -1,0 +1,9 @@
+<div class="alert alert-danger mt-5 text-center">
+  <h3>¿Está seguro que desea eliminar el tipo "{{type.nombre}}"?</h3>
+  <p class="fs-5">⚠️ Advertencia: Esto eliminará <strong>TODOS</strong> los comercios asociados a este tipo.</p>
+  
+  <form action="/admin/commerce-types/{{type._id}}/delete" method="POST" class="mt-4">
+    <a href="/admin/commerce-types" class="btn btn-secondary px-4">Cancelar</a>
+    <button type="submit" class="btn btn-danger px-4">Aceptar y Eliminar</button>
+  </form>
+</div>

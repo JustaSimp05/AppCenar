@@ -1,0 +1,31 @@
+<h2>Listado de Clientes</h2>
+<table class="table table-striped mt-3">
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Pedidos realizados</th>
+      <th>Teléfono</th>
+      <th>Correo</th>
+      <th>Acción</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each clients}}
+    <tr>
+      <td>{{this.nombre}} {{this.apellido}}</td>
+      <td>{{this.orderCount}}</td>
+      <td>{{this.telefono}}</td>
+      <td>{{this.correo}}</td>
+      <td>
+        <form action="/admin/clients/{{this._id}}/toggle" method="POST">
+          {{#if this.isActive}}
+            <button class="btn btn-sm btn-danger">Inactivar</button>
+          {{else}}
+            <button class="btn btn-sm btn-success">Activar</button>
+          {{/if}}
+        </form>
+      </td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>

@@ -1,0 +1,97 @@
+<div class="d-flex justify-content-between align-items-center mt-4">
+  <h2>Mantenimiento Administradores</h2>
+  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createAdminModal">
+    <i class="fas fa-plus"></i> Crear Admin
+  </button>
+</div>
+
+<table class="table table-bordered mt-3">
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Usuario</th>
+      <th>Cédula</th>
+      <th>Correo</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each admins}}
+    <tr>
+      <td>{{this.nombre}} {{this.apellido}}</td>
+      <td>{{this.username}}</td>
+      <td>{{this.cedula}}</td>
+      <td>{{this.correo}}</td>
+      <td>
+        {{#ifEquals this._id ../currentUser.id}}
+          <span class="text-muted">Tu usuario</span>
+        {{else}}
+          <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editAdminModal{{this._id}}">Editar</button>
+          
+          <form action="/admin/admins/{{this._id}}/toggle" method="POST" class="d-inline">
+            {{#if this.isActive}}
+               <button class="btn btn-sm btn-danger" onclick="return confirm('¿Seguro desactivar?')">Inactivar</button>
+            {{else}}
+               <button class="btn btn-sm btn-success" onclick="return confirm('¿Seguro activar?')">Activar</button>
+            {{/if}}
+          </form>
+        {{/ifEquals}}
+
+        <div class="modal fade" id="editAdminModal{{this._id}}" tabindex="-1">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <form action="/admin/admins/{{this._id}}/edit" method="POST">
+                <div class="modal-header">
+                  <h5 class="modal-title">Editar Admin</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  <input type="text" name="nombre" class="form-control mb-2" value="{{this.nombre}}" required placeholder="Nombre">
+                  <input type="text" name="apellido" class="form-control mb-2" value="{{this.apellido}}" required placeholder="Apellido">
+                  <input type="text" name="cedula" class="form-control mb-2" value="{{this.cedula}}" required placeholder="Cédula">
+                  <input type="email" name="correo" class="form-control mb-2" value="{{this.correo}}" required placeholder="Correo">
+                  <input type="text" name="username" class="form-control mb-2" value="{{this.username}}" required placeholder="Usuario">
+                  <hr>
+                  <small>Dejar en blanco si no desea cambiar la contraseña</small>
+                  <input type="password" name="password" class="form-control mb-2" placeholder="Nueva Contraseña">
+                  <input type="password" name="password2" class="form-control mb-2" placeholder="Confirmar">
+                </div>
+                <div class="modal-footer">
+                  <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>
+
+<div class="modal fade" id="createAdminModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="/admin/admins/create" method="POST">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Nuevo Admin</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+             <div class="col-6"><input type="text" name="nombre" class="form-control mb-2" placeholder="Nombre" required></div>
+             <div class="col-6"><input type="text" name="apellido" class="form-control mb-2" placeholder="Apellido" required></div>
+          </div>
+          <input type="text" name="cedula" class="form-control mb-2" placeholder="Cédula" required>
+          <input type="email" name="correo" class="form-control mb-2" placeholder="Correo" required>
+          <input type="text" name="username" class="form-control mb-2" placeholder="Usuario" required>
+          <input type="password" name="password" class="form-control mb-2" placeholder="Contraseña" required>
+          <input type="password" name="password2" class="form-control mb-2" placeholder="Confirmar Contraseña" required>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Crear</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
