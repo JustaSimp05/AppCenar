@@ -7,6 +7,7 @@ const Category = require('../models/Category');
 const Product = require('../models/Product');
 const Order = require('../models/Order');
 const CommerceType = require('../models/CommerceType');
+const User = require('../models/User'); // <- NUEVO: para buscar deliveries
 const upload = require('../config/upload'); // mismo multer que usas en auth
 
 // Middleware de protección para rol comercio
@@ -60,7 +61,6 @@ router.get('/home', requireCommerce, async (req, res) => {
     res.redirect('/auth/login');
   }
 });
-
 
 /* =========================
    PERFIL COMERCIO
@@ -281,7 +281,6 @@ router.get('/products', requireCommerce, async (req, res) => {
   }
 });
 
-
 // POST crear producto
 router.post(
   '/products',
@@ -436,8 +435,8 @@ router.get('/orders', requireCommerce, async (req, res) => {
       .populate('direccion', 'nombre descripcion')
       .sort({ creadoEn: -1 });
 
-    const pendientes = orders.filter(o => o.estado === 'pendiente').length;
-    const enProceso = orders.filter(o => o.estado === 'en proceso').length;
+    const pendientes  = orders.filter(o => o.estado === 'pendiente').length;
+    const enProceso   = orders.filter(o => o.estado === 'en proceso').length;
     const completados = orders.filter(o => o.estado === 'completado').length;
 
     res.render('commerce/orders', {
@@ -452,7 +451,6 @@ router.get('/orders', requireCommerce, async (req, res) => {
     res.redirect('/commerce/home');
   }
 });
-
 
 // GET detalle pedido
 router.get('/orders/:id', requireCommerce, async (req, res) => {
@@ -485,8 +483,49 @@ router.get('/orders/:id', requireCommerce, async (req, res) => {
   }
 });
 
+// Asignar delivery y poner pedido en proceso
+router.post('/orders/:id/assign-delivery', requireCommerce, async (req, res) => {
+  try {
+    const commerce = await getCurrentCommerce(req);
 
-// Marcar pedido en proceso
+    // Buscar un delivery disponible
+    const delivery = await User.findOne({
+      rol: 'delivery',
+      estadoDelivery: 'disponible',
+      isActive: true // si tienes este campo en User
+    });
+
+    if (!delivery) {
+      req.flash('error_msg', 'No hay delivery disponible en este momento. Intenta más tarde.');
+      return res.redirect('/commerce/orders/' + req.params.id);
+    }
+
+    // Asignar delivery y pasar a "en proceso"
+    const order = await Order.findOneAndUpdate(
+      { _id: req.params.id, comercio: commerce._id, estado: 'pendiente' },
+      { estado: 'en proceso', delivery: delivery._id },
+      { new: true }
+    );
+
+    if (!order) {
+      req.flash('error_msg', 'Pedido no encontrado o no está pendiente.');
+      return res.redirect('/commerce/orders');
+    }
+
+    // Marcar delivery como ocupado
+    delivery.estadoDelivery = 'ocupado';
+    await delivery.save();
+
+    req.flash('success_msg', 'Delivery asignado correctamente y pedido en proceso.');
+    res.redirect('/commerce/orders/' + req.params.id);
+  } catch (err) {
+    console.error(err);
+    req.flash('error_msg', 'Error al asignar delivery.');
+    res.redirect('/commerce/orders/' + req.params.id);
+  }
+});
+
+// Marcar pedido en proceso (si decides seguir usándolo aparte)
 router.post('/orders/:id/process', requireCommerce, async (req, res) => {
   try {
     const commerce = await getCurrentCommerce(req);
