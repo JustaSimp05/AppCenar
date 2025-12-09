@@ -1,0 +1,26 @@
+<div class="mt-4">
+  <h2>Eliminar categoría</h2>
+  <div class="card mt-3">
+    <div class="card-body">
+      <p class="fs-5">
+        ¿Está seguro que desea eliminar esta categoría?
+      </p>
+      <p>
+        <strong>Nombre:</strong> {{category.nombre}}<br>
+        <strong>Descripción:</strong> {{category.descripcion}}
+      </p>
+
+      <div class="d-flex justify-content-between mt-4">
+        <a href="/commerce/categories" class="btn btn-secondary">
+          Cancelar
+        </a>
+
+        <form method="POST" action="/commerce/categories/{{category._id}}/delete">
+          <button type="submit" class="btn btn-danger">
+            Aceptar y eliminar
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
