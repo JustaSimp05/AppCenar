@@ -1,0 +1,63 @@
+<div class="mt-4">
+  <h2>Editar producto</h2>
+  <p class="text-muted">Modifica los datos del producto seleccionado.</p>
+
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card mb-3">
+        <div class="card-header">Foto actual</div>
+        <div class="card-body text-center">
+          {{#if product.foto}}
+            <img src="{{product.foto}}" class="img-fluid rounded" style="max-height:160px;" alt="{{product.nombre}}">
+          {{else}}
+            <p class="text-muted mb-0">Sin foto cargada.</p>
+          {{/if}}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-8">
+      <div class="card mb-3">
+        <div class="card-body">
+          <form method="POST" action="/commerce/products/{{product._id}}/edit" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label class="form-label">Nombre</label>
+              <input type="text" name="nombre" class="form-control" required value="{{product.nombre}}">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Descripción</label>
+              <textarea name="descripcion" class="form-control" rows="3">{{product.descripcion}}</textarea>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Precio (RD$)</label>
+              <input type="number" name="precio" step="0.01" min="0" class="form-control" required value="{{product.precio}}">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Categoría</label>
+              <select name="categoria" class="form-select" required>
+                {{#each categories}}
+                  <option value="{{this._id}}" {{#ifEquals this._id ../product.categoria}}selected{{/ifEquals}}>
+                    {{this.nombre}}
+                  </option>
+                {{/each}}
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Nueva foto (opcional)</label>
+              <input type="file" name="foto" class="form-control" accept="image/*">
+            </div>
+
+            <div class="d-flex justify-content-between">
+              <a href="/commerce/products" class="btn btn-secondary">Volver</a>
+              <button type="submit" class="btn btn-primary">Guardar cambios</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

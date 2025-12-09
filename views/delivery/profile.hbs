@@ -1,0 +1,53 @@
+<div class="mt-4 row justify-content-center">
+  <div class="col-md-8">
+    <div class="card shadow-sm">
+      <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">Mi Perfil Delivery</h4>
+      </div>
+      <div class="card-body">
+        
+        <div class="text-center mb-4">
+          {{#if user.fotoPerfil}}
+            <img src="{{user.fotoPerfil}}" class="rounded-circle border border-3 border-primary" style="width: 120px; height: 120px; object-fit: cover;">
+          {{else}}
+            <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center text-white" style="width: 120px; height: 120px;">
+              <i class="fas fa-user fa-3x"></i>
+            </div>
+          {{/if}}
+        </div>
+
+        <form action="/delivery/profile" method="POST" enctype="multipart/form-data">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Nombre</label>
+              <input type="text" name="nombre" class="form-control" value="{{user.nombre}}" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Apellido</label>
+              <input type="text" name="apellido" class="form-control" value="{{user.apellido}}" required>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Teléfono</label>
+            <input type="text" name="telefono" class="form-control" value="{{user.telefono}}" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Correo (No editable)</label>
+            <input type="email" class="form-control" value="{{user.correo}}" disabled>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label">Cambiar Foto</label>
+            <input type="file" name="fotoPerfil" class="form-control" accept="image/*">
+          </div>
+
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

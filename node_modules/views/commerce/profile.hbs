@@ -1,0 +1,74 @@
+<div class="mt-4">
+  <h2>Mi perfil de comercio</h2>
+  <p class="text-muted">Actualiza la información básica de tu comercio.</p>
+
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card mb-3">
+        <div class="card-header">Logo actual</div>
+        <div class="card-body text-center">
+          {{#if commerce.logoComercio}}
+            <img src="{{commerce.logoComercio}}" class="img-fluid rounded mb-2" alt="Logo del comercio" style="max-height:150px;">
+          {{else}}
+            <p class="text-muted">Sin logo cargado.</p>
+          {{/if}}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-8">
+      <div class="card mb-3">
+        <div class="card-header">Datos del comercio</div>
+        <div class="card-body">
+          <form method="POST" action="/commerce/profile" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label class="form-label">Nombre del comercio</label>
+              <input type="text" name="nombreComercio" class="form-control" required value="{{commerce.nombreComercio}}">
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Teléfono</label>
+                <input type="text" name="telefono" class="form-control" required value="{{commerce.telefono}}">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Correo</label>
+                <input type="email" name="correo" class="form-control" required value="{{commerce.correo}}">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Logo del comercio</label>
+              <input type="file" name="logoComercio" class="form-control" accept="image/*">
+              <small class="text-muted">Opcional. Deja vacío si no deseas cambiarlo.</small>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Hora apertura</label>
+                <input type="time" name="horaApertura" class="form-control" required value="{{commerce.horaApertura}}">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Hora cierre</label>
+                <input type="time" name="horaCierre" class="form-control" required value="{{commerce.horaCierre}}">
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Tipo de comercio</label>
+              <select name="tipoComercio" class="form-select" required>
+                {{#each tiposComercio}}
+                  <option value="{{this._id}}" {{#ifEquals this._id ../commerce.tipoComercio}}selected{{/ifEquals}}>
+                    {{this.nombre}}
+                  </option>
+                {{/each}}
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Guardar cambios</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
