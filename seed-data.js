@@ -1,5 +1,4 @@
-//Para ejecutar la seed solo poner lo sig en la terminal:
-//node seed-data.js
+//Para ejecutar la seed solo poner lo sig en la terminal: node seed-data.js
 
 
 const mongoose = require('mongoose');

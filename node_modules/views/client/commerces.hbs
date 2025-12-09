@@ -1,0 +1,209 @@
+<div class="container mt-4">
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>{{commerceType.nombre}}</h2>
+        <a href="/client/home" class="btn btn-secondary">
+          <i class="fas fa-arrow-left me-1"></i>Volver al Home
+        </a>
+      </div>
+
+      <!-- Buscador -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="input-group">
+            <input type="text" id="busquedaComercio" class="form-control"
+                   placeholder="Buscar comercios por nombre..."
+                   value="{{query}}">
+            <button class="btn btn-primary" type="button" id="btnBuscar">
+              <i class="fas fa-search"></i> Buscar
+            </button>
+          </div>
+          <small class="text-muted">Total de comercios encontrados: <span id="totalComercios">{{commerces.length}}</span></small>
+        </div>
+      </div>
+
+      <!-- Mensaje si no hay comercios -->
+      {{#if (eq commerces.length 0)}}
+      <div class="alert alert-warning text-center">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        No se encontraron comercios de este tipo. Intenta con otro tipo o espera a que se activen.
+      </div>
+      {{else}}
+      <!-- Listado de comercios -->
+      <div class="row" id="listaComercios">
+        {{#each commerces}}
+        <div class="col-md-4 col-sm-6 mb-4">
+          <div class="card h-100 shadow-sm">
+
+            {{#if this.logoComercio}}
+            <img src="{{this.logoComercio}}" class="card-img-top" alt="{{this.nombreComercio}}"
+                 style="height: 200px; object-fit: cover;">
+            {{else}}
+            <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
+                 style="height: 200px;">
+              <i class="fas fa-store fa-4x text-muted"></i>
+            </div>
+            {{/if}}
+
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">{{this.nombreComercio}}</h5>
+              <p class="card-text text-muted mb-2">
+                <i class="fas fa-tag me-1"></i>{{this.tipoComercio.nombre}}
+              </p>
+              <p class="card-text flex-grow-1">
+                <small class="text-muted">
+                  <i class="fas fa-clock me-1"></i>
+                  {{this.horaApertura}} - {{this.horaCierre}}
+                </small>
+              </p>
+
+              <!-- BOTÓN FAVORITO -->
+              <div class="d-flex justify-content-between align-items-center mt-auto">
+                <button class="btn btn-outline-danger btn-sm toggle-favorito"
+                        data-commerce="{{this._id}}"
+                        data-action="{{#if (includes ../favoritosSet this._id)}}remove{{else}}add{{/if}}">
+
+                  {{#if (includes ../favoritosSet this._id)}}
+                    <i class="fas fa-heart"></i> Remover
+                  {{else}}
+                    <i class="far fa-heart"></i> Favorito
+                  {{/if}}
+
+                </button>
+
+                <a href="/client/catalog/{{this._id}}" class="btn btn-primary">
+                  <i class="fas fa-shopping-bag me-1"></i>Ver Menú
+                </a>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+      {{/if}}
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+  // Buscar comercios
+  const inputBusqueda = document.getElementById('busquedaComercio');
+  const btnBuscar = document.getElementById('btnBuscar');
+
+  const buscarComercios = async (query) => {
+    const params = new URLSearchParams();
+    if (query) params.append('q', query);
+    params.append('tipo', '{{commerceType._id}}');
+
+    const response = await fetch(`/client/search-commerces?${params}`);
+    const data = await response.json();
+
+    const container = document.getElementById('listaComercios');
+    container.innerHTML = '';
+
+    if (data.commerces.length === 0) {
+      container.innerHTML = `
+        <div class="col-12">
+          <div class="alert alert-warning text-center">
+            <i class="fas fa-search me-2"></i>
+            No se encontraron comercios con "${query}". Intenta con otro término.
+          </div>
+        </div>
+      `;
+    } else {
+
+      data.commerces.forEach(comercio => {
+        const esFavorito = data.favoritosSet.includes(comercio._id.toString());
+
+        const cardHtml = `
+          <div class="col-md-4 col-sm-6 mb-4">
+            <div class="card h-100 shadow-sm">
+
+              ${comercio.logoComercio ?
+                `<img src="${comercio.logoComercio}" class="card-img-top" style="height:200px; object-fit:cover;">`
+                :
+                `<div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height:200px;">
+                  <i class="fas fa-store fa-4x text-muted"></i>
+                 </div>`
+              }
+
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title">${comercio.nombreComercio}</h5>
+                <p class="card-text text-muted mb-2">
+                  <i class="fas fa-tag me-1"></i>${comercio.tipoComercio.nombre}
+                </p>
+
+                <p class="card-text flex-grow-1">
+                  <small class="text-muted">
+                    <i class="fas fa-clock me-1"></i>
+                    ${comercio.horaApertura} - ${comercio.horaCierre}
+                  </small>
+                </p>
+
+                <div class="d-flex justify-content-between align-items-center mt-auto">
+
+                  <button class="btn btn-outline-danger toggle-favorito"
+                          data-commerce="${comercio._id}"
+                          data-action="${esFavorito ? "remove" : "add"}">
+                    <i class="${esFavorito ? "fas fa-heart" : "far fa-heart"}"></i>
+                    ${esFavorito ? "Remover" : "Favorito"}
+                  </button>
+
+                  <a href="/client/catalog/${comercio._id}" class="btn btn-primary">
+                    <i class="fas fa-shopping-bag me-1"></i>Ver Menú
+                  </a>
+
+                </div>
+
+              </div>
+            </div>
+          </div>
+        `;
+
+        container.innerHTML += cardHtml;
+      });
+    }
+
+    document.getElementById('totalComercios').textContent = data.total;
+  };
+
+  inputBusqueda.addEventListener('input', () => buscarComercios(inputBusqueda.value));
+  btnBuscar.addEventListener('click', () => buscarComercios(inputBusqueda.value));
+
+  // Toggle favoritos
+  document.addEventListener("click", async (e) => {
+    const btn = e.target.closest(".toggle-favorito");
+    if (!btn) return;
+
+    const commerceId = btn.dataset.commerce;
+    const action = btn.dataset.action;
+
+    const res = await fetch("/client/favorites", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ commerceId, action }),
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      alert("Error al procesar favorito");
+      return;
+    }
+
+    // Toggle visual instantáneo
+    if (action === "add") {
+      btn.innerHTML = '<i class="fas fa-heart"></i> Remover';
+      btn.dataset.action = "remove";
+    } else {
+      btn.innerHTML = '<i class="far fa-heart"></i> Favorito';
+      btn.dataset.action = "add";
+    }
+  });
+
+});
+</script>
