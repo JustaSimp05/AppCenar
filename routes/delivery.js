@@ -2,15 +2,41 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Order = require('../models/Order');
-const upload = require('../config/upload'); // Importante para la foto de perfil
+const upload = require('../config/upload'); 
 
-// Middleware de seguridad
-const requireDelivery = (req, res, next) => {
+// ==================================================
+// MIDDLEWARE DE SEGURIDAD (ANTI-ZOMBIE)
+// ==================================================
+const requireDelivery = async (req, res, next) => {
+  // 1. Verificación básica de sesión
   if (!req.session.user || req.session.user.rol !== 'delivery') {
     req.flash('error_msg', 'Acceso no autorizado');
     return res.redirect('/auth/login');
   }
-  next();
+
+  try {
+    // 2. VERIFICACIÓN EN TIEMPO REAL (El arreglo)
+    // Buscamos al usuario en la BD para ver su estado actual real
+    const user = await User.findById(req.session.user.id);
+
+    // Si el usuario no existe (fue borrado) o está inactivo (bloqueado por admin)
+    if (!user || !user.isActive) {
+      // MATAR LA SESIÓN ZOMBIE
+      req.session.destroy((err) => {
+        if (err) console.error(err);
+        // No podemos usar flash después de destruir sesión, así que redirigimos con query
+        res.redirect('/auth/login?error=cuenta_inactiva'); 
+      });
+      return; // Detenemos la ejecución aquí
+    }
+
+    // Si todo está bien, dejamos pasar
+    next();
+
+  } catch (error) {
+    console.error(error);
+    res.redirect('/auth/login');
+  }
 };
 
 // =========================================
@@ -21,38 +47,38 @@ router.get('/home', requireDelivery, async (req, res) => {
     const deliveryId = req.session.user.id;
     const user = await User.findById(deliveryId);
 
-    // Pedidos DISPONIBLES (pendientes sin delivery asignado)
+    // 1. Pedidos DISPONIBLES 
     const availableOrders = await Order.find({
-      estado: 'pendiente',
+      estado: 'en proceso',
       delivery: null
     })
-      .populate('comercio', 'nombreComercio telefono')
-      .populate('direccion')
-      .sort({ creadoEn: 1 });
+    .populate('comercio', 'nombreComercio direccion telefono')
+    .populate('direccion')
+    .sort({ creadoEn: 1 });
 
-    // Mis Pedidos ACTIVOS (En proceso, asignados a mí)
+    // 2. Mis Pedidos ACTIVOS 
     const myActiveOrders = await Order.find({
       delivery: deliveryId,
       estado: 'en proceso'
     })
-      .populate('comercio', 'nombreComercio telefono')
-      .populate('cliente', 'nombre apellido telefono')
-      .populate('direccion')
-      .populate('productos.producto', 'nombre')
-      .sort({ creadoEn: 1 });
+    .populate('comercio', 'nombreComercio telefono')
+    .populate('cliente', 'nombre apellido telefono')
+    .populate('direccion')
+    .populate('productos.producto', 'nombre')
+    .sort({ creadoEn: 1 });
 
-    // Historial (Completados por mí)
+    // 3. Historial 
     const historyOrders = await Order.find({
       delivery: deliveryId,
       estado: 'completado'
     })
-      .sort({ creadoEn: -1 })
-      .limit(10);
+    .sort({ creadoEn: -1 })
+    .limit(10);
 
     res.render('delivery/home', {
       title: 'Home Delivery',
       layout: 'layouts/layout',
-      user,
+      user, 
       availableOrders,
       myActiveOrders,
       historyOrders
@@ -68,36 +94,29 @@ router.get('/home', requireDelivery, async (req, res) => {
 // GESTIÓN DE PEDIDOS
 // =========================================
 
-// POST: Tomar pedido (si decides permitir que el delivery se asigne él mismo)
+// POST: Tomar pedido
 router.post('/orders/:id/take', requireDelivery, async (req, res) => {
   try {
     const orderId = req.params.id;
     const deliveryId = req.session.user.id;
 
-    const user = await User.findById(deliveryId);
-    if (user.estadoDelivery === 'ocupado') {
-      req.flash('error_msg', 'Ya tienes un pedido en proceso.');
-      return res.redirect('/delivery/home');
+    // Validación extra: Un delivery solo puede tener un pedido activo a la vez (Regla de negocio)
+    const activeOrder = await Order.findOne({ delivery: deliveryId, estado: 'en proceso' });
+    if (activeOrder) {
+        req.flash('error_msg', '¡Ya tienes un pedido en curso! Termínalo antes de tomar otro.');
+        return res.redirect('/delivery/home');
     }
 
-    // Verificar que el pedido sigue pendiente y sin delivery
-    const order = await Order.findOne({
-      _id: orderId,
-      delivery: null,
-      estado: 'pendiente'
-    });
+    // Verificar si sigue disponible
+    const order = await Order.findOne({ _id: orderId, delivery: null, estado: 'en proceso' });
 
     if (!order) {
-      req.flash('error_msg', 'El pedido ya no está disponible.');
+      req.flash('error_msg', 'El pedido ya no está disponible o fue tomado por otro.');
       return res.redirect('/delivery/home');
     }
 
     order.delivery = deliveryId;
-    order.estado = 'en proceso';
     await order.save();
-
-    user.estadoDelivery = 'ocupado';
-    await user.save();
 
     req.flash('success_msg', 'Pedido asignado. ¡A trabajar!');
     res.redirect('/delivery/home');
@@ -119,15 +138,11 @@ router.post('/orders/:id/complete', requireDelivery, async (req, res) => {
       { estado: 'completado' }
     );
 
-    if (!order) {
-      req.flash('error_msg', 'No se pudo completar el pedido');
-      return res.redirect('/delivery/home');
+    if (order) {
+      req.flash('success_msg', 'Pedido entregado correctamente');
+    } else {
+      req.flash('error_msg', 'No se pudo completar el pedido (quizás no es tuyo)');
     }
-
-    // Dejar al delivery disponible otra vez
-    await User.findByIdAndUpdate(deliveryId, { estadoDelivery: 'disponible' });
-
-    req.flash('success_msg', 'Pedido entregado correctamente');
     res.redirect('/delivery/home');
   } catch (err) {
     console.error(err);
@@ -140,7 +155,6 @@ router.post('/orders/:id/complete', requireDelivery, async (req, res) => {
 // PERFIL DELIVERY
 // =========================================
 
-// GET: Ver Perfil
 router.get('/profile', requireDelivery, async (req, res) => {
   try {
     const user = await User.findById(req.session.user.id);
@@ -156,7 +170,6 @@ router.get('/profile', requireDelivery, async (req, res) => {
   }
 });
 
-// POST: Actualizar Perfil
 router.post('/profile', requireDelivery, upload.single('fotoPerfil'), async (req, res) => {
   try {
     const { nombre, apellido, telefono } = req.body;
@@ -169,7 +182,7 @@ router.post('/profile', requireDelivery, upload.single('fotoPerfil'), async (req
     await User.findByIdAndUpdate(req.session.user.id, updateData);
 
     if (req.session.user) {
-      req.session.user.username = nombre;
+        req.session.user.username = nombre; 
     }
 
     req.flash('success_msg', 'Perfil actualizado correctamente');

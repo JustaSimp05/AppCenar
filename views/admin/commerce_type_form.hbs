@@ -1,0 +1,34 @@
+<div class="card mt-4 col-md-8 mx-auto">
+  <div class="card-header bg-primary text-white">
+    <h4>{{title}}</h4>
+  </div>
+  <div class="card-body">
+    <form action="{{#if isEdit}}/admin/commerce-types/{{type._id}}/edit{{else}}/admin/commerce-types/new{{/if}}" 
+          method="POST" 
+          enctype="multipart/form-data">
+      
+      <div class="mb-3">
+        <label>Nombre</label>
+        <input type="text" name="nombre" class="form-control" value="{{type.nombre}}" required>
+      </div>
+      
+      <div class="mb-3">
+        <label>Descripción</label>
+        <textarea name="descripcion" class="form-control" required>{{type.descripcion}}</textarea>
+      </div>
+
+      <div class="mb-3">
+        <label>Icono</label>
+        <input type="file" name="icono" class="form-control" {{#unless isEdit}}required{{/unless}}>
+        {{#if type.icono}}
+          <small>Actual: <img src="{{type.icono}}" width="30"></small>
+        {{/if}}
+      </div>
+
+      <div class="d-flex justify-content-between">
+        <a href="/admin/commerce-types" class="btn btn-secondary">Volver</a>
+        <button type="submit" class="btn btn-success">{{#if isEdit}}Guardar{{else}}Crear{{/if}}</button>
+      </div>
+    </form>
+  </div>
+</div>
