@@ -4,10 +4,10 @@
   "description": "AppCenar - Sistema de pedidos delivery MVC Node.js Express MongoDB",
   "main": "app.js",
   "scripts": {
-    "start": "cross-env NODE_ENV=development node app.js",
-    "dev": "cross-env NODE_ENV=development nodemon app.js",
-    "qa": "cross-env NODE_ENV=qa node app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "start": "NODE_ENV=production node app.js",
+  "dev": "NODE_ENV=development nodemon app.js",
+  "qa": "NODE_ENV=qa node app.js",
+  "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "node",
