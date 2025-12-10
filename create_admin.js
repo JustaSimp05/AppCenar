@@ -1,3 +1,5 @@
+//Para ejecutar la seed solo poner lo sig en la terminal: node create_admin.js
+
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const User = require('./models/User'); 
