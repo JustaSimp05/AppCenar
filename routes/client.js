@@ -674,6 +674,10 @@ router.get('/favorites', requireClient, async (req, res) => {
       .populate('comercio', 'nombreComercio logoComercio telefono horaApertura horaCierre')
       .lean(); // <-- NECESARIO para poder mapear el resultado
 
+    // --- CORRECCIÓN AQUÍ: Filtrar comercios eliminados para evitar errores visuales ---
+    favorites = favorites.filter(fav => fav.comercio != null);
+    // ---------------------------------------------------------------------------------
+
     // Convertir "comercio" -> "commerce" (alias)
     favorites = favorites.map(fav => ({
       ...fav,
@@ -735,7 +739,5 @@ router.post('/favorites', requireClient, async (req, res) => {
     return res.status(500).json({ success: false, message: "Error en el servidor" });
   }
 });
-
-
 
 module.exports = router;

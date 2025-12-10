@@ -12,6 +12,7 @@ const CommerceType = require('../models/CommerceType');
 const Product = require('../models/Product');
 
 // Configuración de subida (Multer) para Iconos de Tipos de Comercio
+// Asegúrate de que este archivo existe en tu proyecto en /config/upload.js
 const upload = require('../config/upload'); 
 
 // Middleware Admin
@@ -23,17 +24,14 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
-/* =========================
+/* ========================================================
    1. DASHBOARD (HOME) 
-   =========================
-*/
+   ======================================================== */
 router.get('/home', requireAdmin, async (req, res) => {
   try {
-    // Fechas para "Pedidos de hoy"
     const startOfDay = new Date();
     startOfDay.setHours(0,0,0,0);
 
-    // Consultas paralelas para rendimiento
     const [
       ordersTotal,
       ordersToday,
@@ -80,10 +78,8 @@ router.get('/home', requireAdmin, async (req, res) => {
    ======================================================== */
 router.get('/clients', requireAdmin, async (req, res) => {
   try {
-    // Obtener clientes y calcular cantidad de pedidos de cada uno
     const clients = await User.find({ rol: 'cliente' }).lean();
     
-    // Agregamos conteo de pedidos manualmente
     for (let client of clients) {
       client.orderCount = await Order.countDocuments({ cliente: client._id });
     }
@@ -99,7 +95,6 @@ router.get('/clients', requireAdmin, async (req, res) => {
   }
 });
 
-// Activar/Desactivar Cliente
 router.post('/clients/:id/toggle', requireAdmin, async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
@@ -135,7 +130,6 @@ router.get('/deliveries', requireAdmin, async (req, res) => {
   }
 });
 
-// Activar/Desactivar Delivery
 router.post('/deliveries/:id/toggle', requireAdmin, async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
@@ -185,8 +179,7 @@ router.post('/commerces/:id/toggle', requireAdmin, async (req, res) => {
 
 /* ========================================================
    5. MANTENIMIENTO ADMINISTRADORES 
-   ======================================================== 
-*/
+   ======================================================== */
 router.get('/admins', requireAdmin, async (req, res) => {
   try {
     const admins = await User.find({ rol: 'admin' });
@@ -194,14 +187,13 @@ router.get('/admins', requireAdmin, async (req, res) => {
       title: 'Mantenimiento Administradores',
       layout: 'layouts/layout',
       admins,
-      currentUser: req.session.user // Para evitar editarse a sí mismo
+      currentUser: req.session.user 
     });
   } catch (error) {
     res.redirect('/admin/home');
   }
 });
 
-// Crear Admin
 router.post('/admins/create', requireAdmin, [
   body('nombre').notEmpty(),
   body('apellido').notEmpty(),
@@ -223,7 +215,7 @@ router.post('/admins/create', requireAdmin, [
 
     await User.create({
       nombre, apellido, cedula, correo, username, passwordHash,
-      rol: 'admin', isActive: true // Admins nacen activos
+      rol: 'admin', isActive: true 
     });
     
     req.flash('success_msg', 'Administrador creado');
@@ -235,7 +227,6 @@ router.post('/admins/create', requireAdmin, [
   }
 });
 
-// Activar/Desactivar Admin (Protección: No a sí mismo)
 router.post('/admins/:id/toggle', requireAdmin, async (req, res) => {
   if (req.params.id === req.session.user.id) {
     req.flash('error_msg', 'No puedes desactivar tu propia cuenta');
@@ -251,7 +242,6 @@ router.post('/admins/:id/toggle', requireAdmin, async (req, res) => {
   }
 });
 
-// Editar Admin
 router.post('/admins/:id/edit', requireAdmin, async (req, res) => {
   if (req.params.id === req.session.user.id) {
     req.flash('error_msg', 'No puedes editar tu propia cuenta desde aquí');
@@ -285,7 +275,6 @@ router.post('/admins/:id/edit', requireAdmin, async (req, res) => {
 router.get('/commerce-types', requireAdmin, async (req, res) => {
   try {
     const types = await CommerceType.find().lean();
-    // Contar comercios por tipo
     for (let type of types) {
       type.count = await Commerce.countDocuments({ tipoComercio: type._id });
     }
@@ -299,12 +288,10 @@ router.get('/commerce-types', requireAdmin, async (req, res) => {
   }
 });
 
-// Formulario Crear
 router.get('/commerce-types/new', requireAdmin, (req, res) => {
   res.render('admin/commerce_type_form', { title: 'Nuevo Tipo', layout: 'layouts/layout' });
 });
 
-// Procesar Crear
 router.post('/commerce-types/new', requireAdmin, upload.single('icono'), async (req, res) => {
   try {
     const { nombre, descripcion } = req.body;
@@ -321,7 +308,6 @@ router.post('/commerce-types/new', requireAdmin, upload.single('icono'), async (
   }
 });
 
-// Formulario Editar
 router.get('/commerce-types/:id/edit', requireAdmin, async (req, res) => {
   const type = await CommerceType.findById(req.params.id);
   res.render('admin/commerce_type_form', { 
@@ -332,7 +318,6 @@ router.get('/commerce-types/:id/edit', requireAdmin, async (req, res) => {
   });
 });
 
-// Procesar Editar
 router.post('/commerce-types/:id/edit', requireAdmin, upload.single('icono'), async (req, res) => {
   try {
     const { nombre, descripcion } = req.body;
@@ -347,7 +332,6 @@ router.post('/commerce-types/:id/edit', requireAdmin, upload.single('icono'), as
   }
 });
 
-// Eliminar (Con advertencia de cascada)
 router.get('/commerce-types/:id/delete', requireAdmin, async (req, res) => {
   const type = await CommerceType.findById(req.params.id);
   res.render('admin/commerce_type_delete', { type, layout: 'layouts/layout' });
@@ -355,13 +339,8 @@ router.get('/commerce-types/:id/delete', requireAdmin, async (req, res) => {
 
 router.post('/commerce-types/:id/delete', requireAdmin, async (req, res) => {
   try {
-    // PDF pág 22: "Eliminar este tipo de comercio y todos los comercios asociado"
     const typeId = req.params.id;
-    
-    // 1. Eliminar comercios de este tipo
     await Commerce.deleteMany({ tipoComercio: typeId });
-    
-    // 2. Eliminar el tipo
     await CommerceType.findByIdAndDelete(typeId);
 
     req.flash('success_msg', 'Tipo y comercios asociados eliminados');
@@ -373,19 +352,79 @@ router.post('/commerce-types/:id/delete', requireAdmin, async (req, res) => {
 });
 
 /* ========================================================
-   7. CONFIGURACIÓN - Requerimiento PDF Pág. 20
+   7. CONFIGURACIÓN (Con Validación de Negativos)
    ======================================================== */
 router.get('/config', requireAdmin, async (req, res) => {
-  let config = await Config.findOne();
-  if (!config) config = new Config();
-  res.render('admin/config', { title: 'Configuración', layout: 'layouts/layout', config });
+  try {
+    let config = await Config.findOne();
+    if (!config) config = new Config();
+    res.render('admin/config', { title: 'Configuración', layout: 'layouts/layout', config });
+  } catch (error) {
+    console.error(error);
+    res.redirect('/admin/home');
+  }
 });
 
 router.post('/config', requireAdmin, async (req, res) => {
-  const { itbis } = req.body; // PDF solo exige ITBIS en pág 20, pero mantenemos extras si quieres
-  await Config.findOneAndUpdate({}, { itbis, updatedAt: Date.now() }, { upsert: true });
-  req.flash('success_msg', 'Configuración guardada');
-  res.redirect('/admin/config');
+  try {
+    const { itbis, costoEntrega, tiempoEntrega } = req.body;
+
+    // --- VALIDACIONES DE NÚMEROS ---
+    let errors = [];
+
+    // Validar ITBIS
+    const itbisVal = parseFloat(itbis);
+    if (isNaN(itbisVal) || itbisVal < 0) {
+      errors.push('El ITBIS no puede ser negativo.');
+    }
+    if (itbisVal > 50) { 
+      errors.push('El ITBIS parece demasiado alto (máximo 50%).');
+    }
+
+    // Validar Costo de Entrega (Si el modelo lo usa)
+    // Nota: Aunque el PDF pág 20 solo menciona ITBIS, es buena práctica validar todo lo que venga
+    let costoVal = 0;
+    if (costoEntrega) {
+       costoVal = parseFloat(costoEntrega);
+       if (isNaN(costoVal) || costoVal < 0) {
+          errors.push('El costo de entrega no puede ser negativo.');
+       }
+    }
+    
+    // Validar Tiempo (Si el modelo lo usa)
+    let tiempoVal = 0;
+    if (tiempoEntrega) {
+       tiempoVal = parseFloat(tiempoEntrega);
+       if (isNaN(tiempoVal) || tiempoVal <= 0) {
+          errors.push('El tiempo de entrega debe ser mayor a 0.');
+       }
+    }
+
+    if (errors.length > 0) {
+      req.flash('error_msg', errors.join(' '));
+      return res.redirect('/admin/config');
+    }
+
+    // Guardar si todo está bien
+    const updateData = { 
+        itbis: itbisVal, 
+        updatedAt: Date.now() 
+    };
+    
+    // Solo actualizamos estos si existen en el body (para compatibilidad con tu vista)
+    if(costoEntrega) updateData.costoEntrega = costoVal;
+    if(tiempoEntrega) updateData.tiempoEntrega = tiempoVal;
+
+    await Config.findOneAndUpdate({}, updateData, { upsert: true, new: true });
+
+    req.flash('success_msg', 'Configuración actualizada correctamente');
+    res.redirect('/admin/config');
+
+  } catch (error) {
+    console.error(error);
+    req.flash('error_msg', 'Error guardando configuración');
+    res.redirect('/admin/config');
+  }
 });
 
 module.exports = router;
