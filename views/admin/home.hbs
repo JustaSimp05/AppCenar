@@ -1,41 +1,59 @@
 <div class="mt-4">
-  <h2>Dashboard Admin</h2>
-  <p>Aquí irán las estadísticas y los mantenimientos del sistema (placeholder).</p>
+  <h2 class="mb-4">Dashboard Admin</h2>
 
-  <div class="row mt-3">
-    <div class="col-md-3">
-      <div class="card text-bg-primary mb-3">
+  <div class="row text-center">
+    {{!-- Pedidos --}}
+    <div class="col-md-4 mb-3">
+      <div class="card bg-primary text-white h-100">
         <div class="card-body">
-          <h5 class="card-title">Usuarios</h5>
-          <p class="card-text">Gestión de clientes, comercios y delivery.</p>
+          <h3><i class="fas fa-receipt"></i> Pedidos</h3>
+          <p class="fs-5">Totales: <strong>{{stats.ordersTotal}}</strong></p>
+          <p class="fs-5">Hoy: <strong>{{stats.ordersToday}}</strong></p>
         </div>
       </div>
     </div>
-    <div class="col-md-3">
-      <div class="card text-bg-success mb-3">
+    
+    {{!-- Productos --}}
+    <div class="col-md-4 mb-3">
+      <div class="card bg-secondary text-white h-100">
         <div class="card-body">
-          <h5 class="card-title">Comercios</h5>
-          <p class="card-text">Aprobación y revisión de comercios.</p>
+          <h3><i class="fas fa-hamburger"></i> Productos</h3>
+          <p class="display-4">{{stats.productsTotal}}</p>
         </div>
       </div>
     </div>
-    <div class="col-md-3">
-      <div class="card text-bg-warning mb.3">
+
+    {{!-- Comercios --}}
+    <div class="col-md-4 mb-3">
+      <div class="card bg-info text-white h-100">
         <div class="card-body">
-          <h5 class="card-title">Pedidos</h5>
-          <p class="card-text">Visión general de pedidos (futuro).</p>
+          <h3><i class="fas fa-store"></i> Comercios</h3>
+          <span class="badge bg-success">Activos: {{stats.commerces.active}}</span>
+          <span class="badge bg-danger">Inactivos: {{stats.commerces.inactive}}</span>
         </div>
       </div>
     </div>
-    <div class="col-md-3">
-      <div class="card text-bg-dark mb-3">
+
+    {{!-- Clientes --}}
+    <div class="col-md-6 mb-3">
+      <div class="card bg-warning text-dark h-100">
         <div class="card-body">
-          <h5 class="card-title">Configuración</h5>
-          <p class="card-text">Parámetros generales de AppCenar.</p>
+          <h3><i class="fas fa-users"></i> Clientes</h3>
+          <span class="badge bg-success">Activos: {{stats.clients.active}}</span>
+          <span class="badge bg-danger">Inactivos: {{stats.clients.inactive}}</span>
+        </div>
+      </div>
+    </div>
+
+    {{!-- Delivery --}}
+    <div class="col-md-6 mb-3">
+      <div class="card bg-dark text-white h-100">
+        <div class="card-body">
+          <h3><i class="fas fa-motorcycle"></i> Delivery</h3>
+          <span class="badge bg-success">Activos: {{stats.deliveries.active}}</span>
+          <span class="badge bg-danger">Inactivos: {{stats.deliveries.inactive}}</span>
         </div>
       </div>
     </div>
   </div>
-
-  <p class="mt-2">Usuario: {{user.username}}</p>
 </div>
