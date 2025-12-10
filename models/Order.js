@@ -10,6 +10,7 @@ const OrderSchema = new mongoose.Schema({
   }],
   subtotal: { type: Number, required: true },
   itbis: { type: Number, required: true },
+  itbisMonto: { type: Number, required: true },
   total: { type: Number, required: true },
   estado: { type: String, enum: ['pendiente', 'en proceso', 'completado'], default: 'pendiente' },
   delivery: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

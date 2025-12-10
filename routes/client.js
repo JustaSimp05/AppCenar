@@ -354,9 +354,10 @@ router.post('/order/create', requireClient, [
         productos: cleanProducts,
         subtotal: subtotal,
         itbis: itbisPercent,
+        itbisMonto: itbisAmount,   // 👈 agregar!!
         total: total,
         estado: 'pendiente'
-      });
+      })
 
       return newOrder.save();
     });
