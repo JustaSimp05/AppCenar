@@ -16,8 +16,11 @@ const PORT = process.env.PORT || 3000;
 // Middlewares
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+// === CONFIGURACIÓN DE ARCHIVOS ESTÁTICOS (CRÍTICO PARA IMÁGENES) ===
+// Esto permite acceder a TODO lo que hay en 'public' desde la raíz.
+// Ejemplo: public/uploads/iconos/foto.jpg -> se ve en http://localhost:3000/uploads/iconos/foto.jpg
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
 // Sesiones
 app.use(session({
@@ -43,10 +46,11 @@ app.use((req, res, next) => {
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Carpeta de parciales (si algún día los usas)
+// Carpeta de parciales
 hbs.registerPartials(path.join(__dirname, 'views', 'layouts'));
 
-// Helpers para Handlebars
+// === HELPERS ===
+
 hbs.registerHelper('ifEquals', function (a, b, opts) {
   if (a && b && a.toString() === b.toString()) {
     return opts.fn(this);
@@ -63,17 +67,13 @@ hbs.registerHelper('json', function (context) {
 });
 
 hbs.registerHelper("multiply", function (a, b) {
-  return a * b;
+  return (a * b).toFixed(2); // Agregué toFixed(2) para que se vea bonito el dinero
 });
 
+// Helper includes (DEJÉ SOLO LA VERSIÓN SEGURA)
 hbs.registerHelper("includes", function (array, value) {
-  if (!Array.isArray(array)) return false;
-  return array.includes(value.toString());
-});
-
-hbs.registerHelper("includes", function (array, value) {
-  if (!Array.isArray(array)) return false;     // evita que explote
-  if (value == null) return false;             // evita error toString
+  if (!Array.isArray(array)) return false;     
+  if (value == null) return false;             
   return array.includes(value.toString());
 });
 
@@ -97,12 +97,9 @@ app.get('/', (req, res) => {
       delivery: '/delivery/home',
       admin: '/admin/home'
     };
-    return res.redirect(homes[req.session.user.rol]);
+    return res.redirect(homes[req.session.user.rol] || '/auth/login');
   }
-  res.render('auth/login', { 
-    title: 'AppCenar - Login',
-    layout: 'layouts/layout'
-  });
+  res.redirect('/auth/login'); // Redirige al login en lugar de renderizarlo directo en la raíz (mejor práctica)
 });
 
 // Importar rutas
@@ -120,11 +117,10 @@ app.use('/admin', adminRoutes);
 
 // 404
 app.use((req, res) => {
-  res.status(404).render('404', { title: 'Página no encontrada' });
+  res.status(404).render('404', { title: 'Página no encontrada', layout: 'layouts/layout' });
 });
 
 // Iniciar servidor
 app.listen(PORT, () => {
   console.log(`🚀 AppCenar corriendo en http://localhost:${PORT}`);
-  console.log(`📱 Entorno: ${process.env.NODE_ENV || 'development'}`);
 });

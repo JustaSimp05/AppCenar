@@ -1,81 +1,88 @@
-<div class="container mt-4">
+<div class="container py-5">
   <div class="row justify-content-center">
-    <div class="col-lg-8 col-md-10">
-      <div class="card shadow-sm">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h4 class="mb-0">
-            {{#if address._id}}
-              <i class="fas fa-edit me-2"></i> Editar dirección
-            {{else}}
-              <i class="fas fa-map-marker-alt me-2"></i> Nueva dirección
-            {{/if}}
-          </h4>
-          <span class="badge bg-light text-muted">
-            {{user.nombre}} {{user.apellido}}
-          </span>
+    <div class="col-md-8 col-lg-6">
+      
+      <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        
+        <div class="card-header bg-white border-bottom p-4">
+          <div class="d-flex justify-content-between align-items-center">
+            <h4 class="mb-0 fw-bold text-dark">
+              {{#if address._id}}
+                <i class="fas fa-edit text-primary me-2"></i>Editar Dirección
+              {{else}}
+                <i class="fas fa-map-marker-alt text-primary me-2"></i>Nueva Dirección
+              {{/if}}
+            </h4>
+            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">
+              <i class="fas fa-user me-1"></i> {{user.nombre}}
+            </span>
+          </div>
         </div>
 
-        <div class="card-body">
+        <div class="card-body p-4 p-md-5">
+          
+          {{!-- Mensajes de Error --}}
           {{#if error_msg}}
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-              {{error_msg}}
+            <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 mb-4" role="alert">
+              <i class="fas fa-exclamation-circle me-2"></i> {{error_msg}}
               <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
           {{/if}}
 
           <form action="{{formAction}}" method="POST" novalidate>
-            <div class="mb-3">
-              <label for="nombre" class="form-label">
-                Nombre de la dirección
-                <span class="text-danger">*</span>
+            
+            <div class="mb-4">
+              <label for="nombre" class="form-label small fw-bold text-muted text-uppercase">
+                Nombre de la dirección <span class="text-danger">*</span>
               </label>
-              <input
-                type="text"
-                id="nombre"
-                name="nombre"
-                class="form-control"
-                placeholder="Ej: Casa, Oficina, Apartamento mamá"
-                value="{{address.nombre}}"
-                required
-              >
-              <div class="form-text">
-                Usa un nombre corto para identificarla fácilmente.
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 text-muted"><i class="fas fa-tag"></i></span>
+                <input
+                  type="text"
+                  id="nombre"
+                  name="nombre"
+                  class="form-control bg-light border-start-0"
+                  placeholder="Ej: Casa, Oficina"
+                  value="{{address.nombre}}"
+                  required
+                >
+              </div>
+              <div class="form-text text-muted small mt-1">
+                Un nombre corto para identificarla rápido.
               </div>
             </div>
 
-            <div class="mb-3">
-              <label for="descripcion" class="form-label">
-                Descripción
-                <span class="text-danger">*</span>
+            <div class="mb-4">
+              <label for="descripcion" class="form-label small fw-bold text-muted text-uppercase">
+                Descripción detallada <span class="text-danger">*</span>
               </label>
               <textarea
                 id="descripcion"
                 name="descripcion"
-                class="form-control"
-                rows="3"
-                placeholder="Ej: Calle 10 #23, edificio azul, apto 3B, referencia: frente al colmado La Esquina"
+                class="form-control bg-light"
+                rows="4"
+                placeholder="Calle, número, edificio, apartamento y referencias..."
                 required
               >{{address.descripcion}}</textarea>
-              <div class="form-text">
-                Describe la dirección lo más claro posible para el delivery.
+              <div class="form-text text-muted small mt-1">
+                Ayuda al delivery a llegar más rápido (ej: "Frente al parque").
               </div>
             </div>
 
-            <div class="d-flex justify-content-between mt-4">
-              <a href="/client/addresses" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-1"></i> Volver al listado
-              </a>
-              <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save me-1"></i> {{submitText}}
+            <div class="d-grid gap-3 pt-2">
+              <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm">
+                <i class="fas fa-save me-2"></i> {{submitText}}
               </button>
+              
+              <a href="/client/addresses" class="btn btn-light text-muted">
+                Cancelar y volver
+              </a>
             </div>
+
           </form>
         </div>
-
-        <div class="card-footer text-muted small">
-          Todos los campos marcados con <span class="text-danger">*</span> son obligatorios.
-        </div>
       </div>
+
     </div>
   </div>
 </div>
