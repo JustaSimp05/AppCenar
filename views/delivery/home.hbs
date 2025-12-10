@@ -4,15 +4,7 @@
       <h2><i class="fas fa-motorcycle text-primary me-2"></i>Panel Delivery</h2>
       <p class="text-muted mb-0">Hola, {{user.username}}. ¿Listo para rodar?</p>
     </div>
-    
-    {{#if user.fotoPerfil}}
-      <img src="{{user.fotoPerfil}}" alt="Perfil" class="rounded-circle border border-2 border-primary" style="width: 60px; height: 60px; object-fit: cover;">
-    {{else}}
-      <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
-        <i class="fas fa-user"></i>
-      </div>
-    {{/if}}
-  </div>
+    </div>
 
   {{#if myActiveOrders.length}}
   <div class="card border-primary mb-5 shadow">
@@ -62,49 +54,14 @@
   </div>
   {{else}}
     <div class="alert alert-info mb-4">
-      <i class="fas fa-info-circle me-2"></i>No tienes entregas en curso. ¡Revisa los pedidos disponibles!
+      <i class="fas fa-info-circle me-2"></i>No tienes entregas en curso actualmente.
     </div>
   {{/if}}
 
   <hr class="my-4">
 
   <div class="row">
-    <div class="col-lg-8">
-      <h4 class="mb-3 text-secondary">Pedidos Disponibles</h4>
-      {{#if availableOrders.length}}
-        <div class="row">
-          {{#each availableOrders}}
-          <div class="col-md-12 mb-3">
-            <div class="card shadow-sm">
-              <div class="card-body d-flex justify-content-between align-items-center flex-wrap">
-                <div>
-                  <h5 class="mb-1 text-dark">{{this.comercio.nombreComercio}}</h5>
-                  <p class="mb-0 text-muted small">
-                    <i class="fas fa-map-pin me-1"></i> Destino: <strong>{{this.direccion.descripcion}}</strong>
-                  </p>
-                  <p class="mb-0 text-muted small">
-                    <i class="fas fa-money-bill-wave me-1"></i> Ganancia aprox: RD$ {{this.total}} (Total orden)
-                  </p>
-                </div>
-                
-                <div class="mt-2 mt-md-0">
-                  <form action="/delivery/orders/{{this._id}}/take" method="POST">
-                    <button type="submit" class="btn btn-outline-primary">
-                      <i class="fas fa-hand-paper me-1"></i> Tomar Pedido
-                    </button>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-          {{/each}}
-        </div>
-      {{else}}
-        <p class="text-muted">No hay pedidos disponibles en este momento. Recarga la página en unos minutos.</p>
-      {{/if}}
-    </div>
-
-    <div class="col-lg-4">
+    <div class="col-12">
       <h4 class="mb-3 text-secondary">Últimas Entregas</h4>
       <ul class="list-group">
         {{#each historyOrders}}

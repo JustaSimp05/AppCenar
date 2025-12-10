@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
+const fs = require('fs'); 
+const path = require('path');
+const multer = require('multer');
 
 // Modelos
 const User = require('../models/User');
@@ -10,10 +13,27 @@ const Order = require('../models/Order');
 const Config = require('../models/Config');
 const CommerceType = require('../models/CommerceType');
 const Product = require('../models/Product');
+const Favorite = require('../models/Favorite');
 
-// Configuración de subida (Multer) para Iconos de Tipos de Comercio
-// Asegúrate de que este archivo existe en tu proyecto en /config/upload.js
-const upload = require('../config/upload'); 
+// --- CONFIGURACIÓN DE MULTER PARA ICONOS (CARPETA 'iconos') ---
+const storageTypes = multer.diskStorage({
+  destination: (req, file, cb) => {
+    // AQUÍ ES DONDE CAMBIAMOS LA RUTA A TU CARPETA ESPECÍFICA
+    const uploadPath = 'public/uploads/iconos/'; 
+    
+    // Crear carpeta si no existe (por seguridad)
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
+});
+
+const uploadTypes = multer({ storage: storageTypes });
+// --------------------------------------------------------------
 
 // Middleware Admin
 const requireAdmin = (req, res, next) => {
@@ -24,9 +44,9 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
-/* ========================================================
+/* =========================
    1. DASHBOARD (HOME) 
-   ======================================================== */
+   ========================= */
 router.get('/home', requireAdmin, async (req, res) => {
   try {
     const startOfDay = new Date();
@@ -79,11 +99,9 @@ router.get('/home', requireAdmin, async (req, res) => {
 router.get('/clients', requireAdmin, async (req, res) => {
   try {
     const clients = await User.find({ rol: 'cliente' }).lean();
-    
     for (let client of clients) {
       client.orderCount = await Order.countDocuments({ cliente: client._id });
     }
-
     res.render('admin/clients', {
       title: 'Listado de Clientes',
       layout: 'layouts/layout',
@@ -114,11 +132,9 @@ router.post('/clients/:id/toggle', requireAdmin, async (req, res) => {
 router.get('/deliveries', requireAdmin, async (req, res) => {
   try {
     const deliveries = await User.find({ rol: 'delivery' }).lean();
-
     for (let delivery of deliveries) {
       delivery.deliveredCount = await Order.countDocuments({ delivery: delivery._id, estado: 'completado' });
     }
-
     res.render('admin/deliveries', {
       title: 'Listado de Deliveries',
       layout: 'layouts/layout',
@@ -149,11 +165,9 @@ router.post('/deliveries/:id/toggle', requireAdmin, async (req, res) => {
 router.get('/commerces', requireAdmin, async (req, res) => {
   try {
     const commerces = await Commerce.find().populate('tipoComercio').lean();
-    
     for (let commerce of commerces) {
       commerce.orderCount = await Order.countDocuments({ comercio: commerce._id });
     }
-
     res.render('admin/commerces', {
       title: 'Listado de Comercios',
       layout: 'layouts/layout',
@@ -270,7 +284,7 @@ router.post('/admins/:id/edit', requireAdmin, async (req, res) => {
 });
 
 /* ========================================================
-   6. TIPOS DE COMERCIO
+   6. TIPOS DE COMERCIO (USANDO LA CARPETA 'iconos')
    ======================================================== */
 router.get('/commerce-types', requireAdmin, async (req, res) => {
   try {
@@ -292,17 +306,29 @@ router.get('/commerce-types/new', requireAdmin, (req, res) => {
   res.render('admin/commerce_type_form', { title: 'Nuevo Tipo', layout: 'layouts/layout' });
 });
 
-router.post('/commerce-types/new', requireAdmin, upload.single('icono'), async (req, res) => {
+// CREAR TIPO COMERCIO (Lógica de limpieza de URL)
+router.post('/commerce-types/new', requireAdmin, uploadTypes.single('icono'), async (req, res) => {
   try {
     const { nombre, descripcion } = req.body;
+    
+    let iconoPath = null;
+    if (req.file) {
+        // CORRECCIÓN: Guardar en formato URL web (/uploads/iconos/archivo.png)
+        // 1. Quitar backslashes de Windows
+        let rawPath = req.file.path.replace(/\\/g, "/"); 
+        // 2. Quitar 'public' del inicio para que el navegador lo encuentre
+        iconoPath = rawPath.replace("public", "");
+    }
+
     await CommerceType.create({
       nombre,
       descripcion,
-      icono: req.file ? `/uploads/${req.file.filename}` : null
+      icono: iconoPath
     });
     req.flash('success_msg', 'Tipo de comercio creado');
     res.redirect('/admin/commerce-types');
   } catch (error) {
+    console.error(error);
     req.flash('error_msg', 'Error creando tipo');
     res.redirect('/admin/commerce-types/new');
   }
@@ -318,16 +344,22 @@ router.get('/commerce-types/:id/edit', requireAdmin, async (req, res) => {
   });
 });
 
-router.post('/commerce-types/:id/edit', requireAdmin, upload.single('icono'), async (req, res) => {
+// EDITAR TIPO COMERCIO
+router.post('/commerce-types/:id/edit', requireAdmin, uploadTypes.single('icono'), async (req, res) => {
   try {
     const { nombre, descripcion } = req.body;
     const update = { nombre, descripcion };
-    if (req.file) update.icono = `/uploads/${req.file.filename}`;
+    
+    if (req.file) {
+        let rawPath = req.file.path.replace(/\\/g, "/");
+        update.icono = rawPath.replace("public", "");
+    }
     
     await CommerceType.findByIdAndUpdate(req.params.id, update);
     req.flash('success_msg', 'Tipo actualizado');
     res.redirect('/admin/commerce-types');
   } catch (error) {
+    console.error(error);
     res.redirect('/admin/commerce-types');
   }
 });
@@ -340,10 +372,17 @@ router.get('/commerce-types/:id/delete', requireAdmin, async (req, res) => {
 router.post('/commerce-types/:id/delete', requireAdmin, async (req, res) => {
   try {
     const typeId = req.params.id;
+    const commercesToDelete = await Commerce.find({ tipoComercio: typeId }).select('_id');
+    const commerceIds = commercesToDelete.map(c => c._id);
+
+    if (commerceIds.length > 0) {
+        await Favorite.deleteMany({ comercio: { $in: commerceIds } });
+    }
+
     await Commerce.deleteMany({ tipoComercio: typeId });
     await CommerceType.findByIdAndDelete(typeId);
 
-    req.flash('success_msg', 'Tipo y comercios asociados eliminados');
+    req.flash('success_msg', 'Tipo, comercios y favoritos asociados eliminados');
     res.redirect('/admin/commerce-types');
   } catch (error) {
     req.flash('error_msg', 'Error eliminando');
@@ -352,7 +391,7 @@ router.post('/commerce-types/:id/delete', requireAdmin, async (req, res) => {
 });
 
 /* ========================================================
-   7. CONFIGURACIÓN (Con Validación de Negativos)
+   7. CONFIGURACIÓN 
    ======================================================== */
 router.get('/config', requireAdmin, async (req, res) => {
   try {
@@ -369,10 +408,7 @@ router.post('/config', requireAdmin, async (req, res) => {
   try {
     const { itbis, costoEntrega, tiempoEntrega } = req.body;
 
-    // --- VALIDACIONES DE NÚMEROS ---
     let errors = [];
-
-    // Validar ITBIS
     const itbisVal = parseFloat(itbis);
     if (isNaN(itbisVal) || itbisVal < 0) {
       errors.push('El ITBIS no puede ser negativo.');
@@ -381,23 +417,16 @@ router.post('/config', requireAdmin, async (req, res) => {
       errors.push('El ITBIS parece demasiado alto (máximo 50%).');
     }
 
-    // Validar Costo de Entrega (Si el modelo lo usa)
-    // Nota: Aunque el PDF pág 20 solo menciona ITBIS, es buena práctica validar todo lo que venga
     let costoVal = 0;
     if (costoEntrega) {
        costoVal = parseFloat(costoEntrega);
-       if (isNaN(costoVal) || costoVal < 0) {
-          errors.push('El costo de entrega no puede ser negativo.');
-       }
+       if (isNaN(costoVal) || costoVal < 0) errors.push('Costo entrega no negativo.');
     }
     
-    // Validar Tiempo (Si el modelo lo usa)
     let tiempoVal = 0;
     if (tiempoEntrega) {
        tiempoVal = parseFloat(tiempoEntrega);
-       if (isNaN(tiempoVal) || tiempoVal <= 0) {
-          errors.push('El tiempo de entrega debe ser mayor a 0.');
-       }
+       if (isNaN(tiempoVal) || tiempoVal <= 0) errors.push('Tiempo entrega > 0.');
     }
 
     if (errors.length > 0) {
@@ -405,13 +434,10 @@ router.post('/config', requireAdmin, async (req, res) => {
       return res.redirect('/admin/config');
     }
 
-    // Guardar si todo está bien
     const updateData = { 
         itbis: itbisVal, 
         updatedAt: Date.now() 
     };
-    
-    // Solo actualizamos estos si existen en el body (para compatibilidad con tu vista)
     if(costoEntrega) updateData.costoEntrega = costoVal;
     if(tiempoEntrega) updateData.tiempoEntrega = tiempoVal;
 

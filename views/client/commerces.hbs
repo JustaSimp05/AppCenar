@@ -142,7 +142,6 @@ document.addEventListener('DOMContentLoaded', function() {
       data.commerces.forEach(comercio => {
         const esFavorito = data.favoritosSet.includes(comercio._id.toString());
 
-        // HTML ACTUALIZADO PARA COINCIDIR CON EL DISEÑO DE HBS
         const cardHtml = `
           <div class="col-md-6 col-lg-4">
             <div class="card h-100 border-0 shadow-sm hover-effect rounded-4 overflow-hidden">
@@ -223,10 +222,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (action === "add") {
-      btn.innerHTML = '<i class="fas fa-heart"></i>'; // Icono lleno
+      btn.innerHTML = '<i class="fas fa-heart"></i>'; 
       btn.dataset.action = "remove";
     } else {
-      btn.innerHTML = '<i class="far fa-heart"></i>'; // Icono vacío
+      btn.innerHTML = '<i class="far fa-heart"></i>'; 
       btn.dataset.action = "add";
     }
   });
