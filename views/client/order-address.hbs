@@ -1,72 +1,196 @@
-<div class="row mt-4">
-  <div class="col-md-7">
-    <h2>Selecciona una dirección</h2>
-    <hr>
+<style>
+  /* Estilo para resaltar la dirección seleccionada */
+  .address-option:checked + .card {
+    border-color: var(--primary-color) !important;
+    background-color: rgba(255, 87, 34, 0.05); /* Naranja muy suave */
+    box-shadow: 0 4px 12px rgba(255, 87, 34, 0.15) !important;
+  }
+  .address-card {
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .address-card:hover {
+    transform: translateY(-2px);
+  }
+</style>
 
-    {{#unless addresses.length}}
-      <div class="alert alert-warning">
-        No tienes direcciones. Debes crear al menos una en "Mis direcciones" para continuar.
+<div class="container py-4">
+  
+  <div class="row g-4">
+    
+    <div class="col-lg-8">
+      
+      <div class="mb-4">
+        <h2 class="fw-bold text-dark mb-1">
+          <i class="fas fa-map-marker-alt text-danger me-2"></i>¿Dónde entregamos?
+        </h2>
+        <p class="text-muted">Selecciona la dirección para este pedido.</p>
       </div>
-      <a href="/client/addresses" class="btn btn-primary">Ir a mis direcciones</a>
-    {{/unless}}
 
-    {{#if addresses.length}}
-      <form id="orderAddressForm">
-        {{#each addresses}}
-          <div class="form-check mb-2">
-            <input class="form-check-input" type="radio" name="addressId" id="addr-{{_id}}" value="{{_id}}">
-            <label class="form-check-label" for="addr-{{_id}}">
-              <strong>{{nombre}}</strong> - {{descripcion}}
-            </label>
+      {{#unless addresses.length}}
+        <div class="card border-0 shadow-sm rounded-4 text-center py-5 bg-white">
+          <div class="card-body">
+            <div class="mb-3 text-muted opacity-25">
+              <i class="fas fa-map-marked-alt fa-4x"></i>
+            </div>
+            <h4 class="fw-bold text-dark">No tienes direcciones</h4>
+            <p class="text-muted mb-4">Necesitas una dirección para que el delivery sepa dónde ir.</p>
+            <a href="/client/addresses/new" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
+              <i class="fas fa-plus me-2"></i> Crear Dirección
+            </a>
           </div>
-        {{/each}}
+        </div>
+      {{/unless}}
 
-        <button type="submit" class="btn btn-success mt-3">Pedir</button>
-        <a href="/client/catalog/{{commerce._id}}" class="btn btn-secondary mt-3 ms-2">Volver al catálogo</a>
-      </form>
-    {{/if}}
-  </div>
+      {{#if addresses.length}}
+        <form id="orderAddressForm">
+          <div class="row g-3">
+            {{#each addresses}}
+              <div class="col-12">
+                <label class="w-100 position-relative">
+                  <input type="radio" name="addressId" value="{{this._id}}" class="address-option position-absolute opacity-0">
+                  
+                  <div class="card h-100 border shadow-sm rounded-4 address-card p-3">
+                    <div class="d-flex align-items-center">
+                      <div class="me-3 text-primary">
+                        <i class="far fa-circle fa-lg uncheck-icon"></i>
+                        <i class="fas fa-check-circle fa-lg check-icon d-none"></i>
+                      </div>
+                      
+                      <div class="flex-grow-1">
+                        <h6 class="fw-bold text-dark mb-1">{{this.nombre}}</h6>
+                        <p class="text-muted small mb-0">{{this.descripcion}}</p>
+                      </div>
+                      
+                      <div class="text-muted ms-2">
+                        <i class="fas fa-chevron-right"></i>
+                      </div>
+                    </div>
+                  </div>
+                </label>
+              </div>
+            {{/each}}
+          </div>
 
-  <div class="col-md-5">
-    <h4>Resumen del pedido</h4>
-    <div class="card">
-      <div class="card-body">
-        {{#if commerce.logoComercio}}
-          <img src="{{commerce.logoComercio}}" class="img-fluid mb-2" style="max-height: 80px; object-fit: contain;">
-        {{/if}}
-        <h5>{{commerce.nombreComercio}}</h5>
+          <div class="mt-4 d-flex justify-content-between align-items-center">
+            <a href="/client/addresses/new" class="text-decoration-none fw-bold small">
+              <i class="fas fa-plus me-1"></i> Nueva dirección
+            </a>
+          </div>
+        </form>
+      {{/if}}
+    </div>
 
-        <hr>
-        <p>Subtotal: <strong>RD$ {{subtotal}}</strong></p>
-        <p>ITBIS ({{itbis}}%): <strong>RD$ {{../itbis}}</strong></p>
-        <p>Total: <strong>RD$ {{total}}</strong></p>
+    <div class="col-lg-4">
+      <div class="card border-0 shadow rounded-4 sticky-top" style="top: 100px;">
+        <div class="card-header bg-white border-bottom py-3">
+          <h5 class="mb-0 fw-bold text-dark"><i class="fas fa-receipt me-2 text-primary"></i>Resumen</h5>
+        </div>
+        
+        <div class="card-body p-4">
+          
+          <div class="mb-4">
+            <small class="text-muted text-uppercase fw-bold" style="font-size: 0.7rem;">Restaurantes</small>
+            <div class="d-flex flex-wrap gap-2 mt-2">
+              {{#each commerces}}
+                <div class="d-flex align-items-center bg-light rounded-pill pe-3 p-1 border">
+                  {{#if this.logoComercio}}
+                    <img src="{{this.logoComercio}}" class="rounded-circle" style="width: 24px; height: 24px; object-fit: cover;">
+                  {{else}}
+                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;">
+                      <i class="fas fa-store" style="font-size: 10px;"></i>
+                    </div>
+                  {{/if}}
+                  <span class="ms-2 small fw-bold text-dark">{{this.nombreComercio}}</span>
+                </div>
+              {{/each}}
+            </div>
+          </div>
+
+          <ul class="list-group list-group-flush mb-4">
+            <li class="list-group-item d-flex justify-content-between px-0 bg-transparent">
+              <span class="text-muted">Subtotal</span>
+              <span class="fw-bold">RD$ {{subtotal}}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between px-0 bg-transparent">
+              <span class="text-muted">ITBIS ({{itbis}}%)</span>
+              <span class="text-muted small">Incluido en total</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between px-0 bg-transparent border-top border-2 mt-2 pt-3">
+              <span class="h5 fw-bold text-dark mb-0">Total</span>
+              <span class="h4 fw-bold text-success mb-0">RD$ {{total}}</span>
+            </li>
+          </ul>
+
+          <button type="submit" form="orderAddressForm" class="btn btn-success w-100 py-3 rounded-pill fw-bold shadow-sm hover-scale">
+            Confirmar Pedido <i class="fas fa-check ms-2"></i>
+          </button>
+          
+          <div class="text-center mt-3">
+            <a href="/client/home" class="text-muted small text-decoration-none">
+              Cancelar y seguir viendo
+            </a>
+          </div>
+
+        </div>
       </div>
     </div>
+
   </div>
 </div>
 
 <script>
+// Script para cambiar iconos al seleccionar (UI Candy)
+document.querySelectorAll('input[name="addressId"]').forEach(radio => {
+  radio.addEventListener('change', function() {
+    // Resetear todos los iconos
+    document.querySelectorAll('.uncheck-icon').forEach(el => el.classList.remove('d-none'));
+    document.querySelectorAll('.check-icon').forEach(el => el.classList.add('d-none'));
+    
+    // Activar el seleccionado
+    const card = this.closest('label').querySelector('.card');
+    card.querySelector('.uncheck-icon').classList.add('d-none');
+    card.querySelector('.check-icon').classList.remove('d-none');
+  });
+});
+
 document.getElementById('orderAddressForm')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const formData = new FormData(e.target);
   const addressId = formData.get('addressId');
 
   if (!addressId) {
-    alert('Selecciona una dirección');
+    // Alerta bonita si usas librerías, sino alert normal
+    alert('⚠️ Por favor selecciona una dirección de entrega.');
     return;
   }
 
-  const res = await fetch('/client/order/create', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ addressId })
-  });
+  // Deshabilitar botón para evitar doble click
+  const btn = document.querySelector('button[type="submit"]');
+  const originalText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Procesando...';
 
-  const data = await res.json();
-  if (data.success) {
-    window.location.href = data.redirect || '/client/home';
-  } else {
-    alert(data.error || 'Error al crear pedido');
+  try {
+    const res = await fetch('/client/order/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ addressId })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      window.location.href = data.redirect || '/client/orders';
+    } else {
+      alert(data.error || 'Error al crear pedido');
+      btn.disabled = false;
+      btn.innerHTML = originalText;
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Error de conexión');
+    btn.disabled = false;
+    btn.innerHTML = originalText;
   }
 });
 </script>

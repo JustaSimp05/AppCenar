@@ -1,171 +1,171 @@
-<div class="mb-3">
-  <a href="/client/orders" class="btn btn-outline-secondary btn-sm">
-    <i class="fas fa-arrow-left me-1"></i> Volver a mis pedidos
-  </a>
-</div>
+<div class="container py-4">
+  
+  <div class="d-flex align-items-center mb-4">
+    <a href="/client/orders" class="btn btn-outline-secondary rounded-circle me-3 shadow-sm" style="width: 40px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center;">
+      <i class="fas fa-arrow-left"></i>
+    </a>
+    <div>
+      <h2 class="fw-bold text-dark mb-0">Detalle del Pedido</h2>
+      <p class="text-muted mb-0 small">ID: #{{order._id}} • {{order.creadoEn}}</p>
+    </div>
+  </div>
 
-<div class="row">
-  <div class="col-lg-8">
-    <div class="card shadow-sm mb-3">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <div>
-          <h4 class="mb-0">
-            <i class="fas fa-receipt text-primary me-2"></i>
-            Pedido #{{order._id}}
-          </h4>
-          <small class="text-muted">
-            Fecha y hora: {{order.creadoEn}}
-          </small>
-        </div>
-        <div>
-          {{#ifEquals order.estado 'pendiente'}}
-            <span class="badge bg-warning text-dark fs-6">Pendiente</span>
-          {{/ifEquals}}
-          {{#ifEquals order.estado 'en proceso'}}
-            <span class="badge bg-info text-dark fs-6">En proceso</span>
-          {{/ifEquals}}
-          {{#ifEquals order.estado 'completado'}}
-            <span class="badge bg-success fs-6">Completado</span>
-          {{/ifEquals}}
+  <div class="row g-4">
+    
+    <div class="col-lg-8">
+      
+      <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-4">Estado del envío</h5>
+          
+          <div class="position-relative m-4">
+            <div class="progress" style="height: 4px;">
+              <div class="progress-bar bg-primary" role="progressbar" 
+                   style="width: {{#ifEquals order.estado 'pendiente'}}33%{{/ifEquals}}{{#ifEquals order.estado 'en proceso'}}66%{{/ifEquals}}{{#ifEquals order.estado 'completado'}}100%{{/ifEquals}};">
+              </div>
+            </div>
+            
+            <div class="position-absolute top-0 start-0 translate-middle btn btn-sm btn-primary rounded-circle" style="width: 2rem; height:2rem;"><i class="fas fa-clipboard-check"></i></div>
+            <div class="position-absolute top-0 start-50 translate-middle btn btn-sm {{#ifEquals order.estado 'pendiente'}}btn-secondary{{else}}btn-primary{{/ifEquals}} rounded-circle" style="width: 2rem; height:2rem;"><i class="fas fa-fire"></i></div>
+            <div class="position-absolute top-0 start-100 translate-middle btn btn-sm {{#ifEquals order.estado 'completado'}}btn-primary{{else}}btn-secondary{{/ifEquals}} rounded-circle" style="width: 2rem; height:2rem;"><i class="fas fa-flag-checkered"></i></div>
+          </div>
+          
+          <div class="d-flex justify-content-between text-muted small px-2">
+            <span>Recibido</span>
+            <span>Preparando</span>
+            <span>Entregado</span>
+          </div>
+
+          <div class="mt-4 text-center">
+            <span class="badge rounded-pill px-3 py-2 fs-6
+              {{#ifEquals order.estado 'pendiente'}}bg-warning text-dark{{/ifEquals}}
+              {{#ifEquals order.estado 'en proceso'}}bg-info text-white{{/ifEquals}}
+              {{#ifEquals order.estado 'completado'}}bg-success text-white{{/ifEquals}}">
+              {{order.estado}}
+            </span>
+          </div>
         </div>
       </div>
 
-      <div class="card-body">
-        <div class="mb-3">
-          <h5 class="mb-1">Comercio</h5>
-          {{#if order.comercio}}
-            <div class="d-flex align-items-center">
-              {{#if order.comercio.logoComercio}}
-                <img src="{{order.comercio.logoComercio}}" alt="{{order.comercio.nombreComercio}}"
-                     class="rounded me-2"
-                     style="width: 48px; height: 48px; object-fit: cover;">
-              {{/if}}
-              <div>
-                <div class="fw-semibold">{{order.comercio.nombreComercio}}</div>
-                <div class="text-muted small">
-                  {{order.comercio.telefono}} • {{order.comercio.correo}}
-                </div>
-              </div>
-            </div>
-          {{else}}
-            <span class="text-muted">Información de comercio no disponible</span>
-          {{/if}}
+      <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-header bg-white border-bottom py-3">
+          <h5 class="mb-0 fw-bold"><i class="fas fa-utensils text-primary me-2"></i>Productos</h5>
         </div>
-
-        <div class="mb-3">
-          <h5 class="mb-1">Dirección de entrega</h5>
-          {{#if order.direccion}}
-            <div class="fw-semibold">{{order.direccion.nombre}}</div>
-            <div class="text-muted">{{order.direccion.descripcion}}</div>
-          {{else}}
-            <span class="text-muted">Sin dirección asociada</span>
-          {{/if}}
-        </div>
-
-        <hr>
-
-        <h5 class="mb-3">Productos del pedido</h5>
-
-        {{#if order.productos.length}}
+        <div class="card-body p-0">
           <div class="table-responsive">
-            <table class="table align-middle">
-              <thead class="table-light">
+            <table class="table align-middle mb-0">
+              <thead class="bg-light">
                 <tr>
-                  <th>Producto</th>
-                  <th>Precio</th>
-                  <th>Cantidad</th>
-                  <th>Subtotal</th>
+                  <th class="ps-4 border-0">Item</th>
+                  <th class="border-0 text-center">Cant.</th>
+                  <th class="border-0 text-end pe-4">Precio</th>
                 </tr>
               </thead>
               <tbody>
                 {{#each order.productos}}
-                  <tr>
-                    <td>
-                      <div class="d-flex align-items-center">
-                        {{#if this.producto.foto}}
-                          <img src="{{this.producto.foto}}" alt="{{this.producto.nombre}}" class="rounded me-2"
-                               style="width: 50px; height: 50px; object-fit: cover;">
-                        {{else}}
-                          <div class="rounded bg-secondary text-white d-flex align-items-center justify-content-center me-2"
-                               style="width: 50px; height: 50px;">
-                            <i class="fas fa-utensils"></i>
-                          </div>
-                        {{/if}}
-                        <div>
-                          <div class="fw-semibold">{{this.producto.nombre}}</div>
-                          <small class="text-muted">{{this.producto.descripcion}}</small>
+                <tr>
+                  <td class="ps-4 py-3">
+                    <div class="d-flex align-items-center">
+                      {{#if this.producto.foto}}
+                        <img src="{{this.producto.foto}}" class="rounded-3 me-3 shadow-sm" style="width: 60px; height: 60px; object-fit: cover;">
+                      {{else}}
+                        <div class="rounded-3 bg-light d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                          <i class="fas fa-utensils text-muted"></i>
                         </div>
+                      {{/if}}
+                      <div>
+                        <h6 class="mb-0 fw-bold text-dark">{{this.producto.nombre}}</h6>
+                        <small class="text-muted d-block text-truncate" style="max-width: 200px;">{{this.producto.descripcion}}</small>
                       </div>
-                    </td>
-                    <td>RD$ {{this.producto.precio}}</td>
-                    <td>{{this.cantidad}}</td>
-                    <td>RD$ {{multiply this.producto.precio this.cantidad}}</td>
-                  </tr>
+                    </div>
+                  </td>
+                  <td class="text-center fw-bold text-muted">x{{this.cantidad}}</td>
+                  <td class="text-end pe-4 fw-bold text-primary">RD$ {{multiply this.producto.precio this.cantidad}}</td>
+                </tr>
                 {{/each}}
               </tbody>
             </table>
           </div>
-        {{else}}
-          <div class="alert alert-info">
-            Este pedido no tiene productos asociados.
+        </div>
+      </div>
+
+    </div>
+
+    <div class="col-lg-4">
+      
+      <div class="card border-0 shadow-sm rounded-4 mb-4 bg-light">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-3">Resumen</h5>
+          <div class="d-flex justify-content-between mb-2 text-muted">
+            <span>Subtotal</span>
+            <span>RD$ {{order.subtotal}}</span>
           </div>
-        {{/if}}
-      </div>
-    </div>
-  </div>
-
-  <div class="col-lg-4">
-    <div class="card shadow-sm mb-3">
-      <div class="card-header">
-        <h5 class="mb-0">Resumen del pedido</h5>
-      </div>
-      <div class="card-body">
-        <div class="d-flex justify-content-between mb-2">
-          <span>Subtotal:</span>
-          <span>RD$ {{order.subtotal}}</span>
-        </div>
-        <div class="d-flex justify-content-between mb-2">
-          <span>ITBIS ({{order.itbis}}%):</span>
-          <span>RD$ {{order.itbisMonto}}</span>
-        </div>
-        <hr>
-        <div class="d-flex justify-content-between mb-2 fw-semibold">
-          <span>Total:</span>
-          <span>RD$ {{order.total}}</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="card shadow-sm">
-      <div class="card-header">
-        <h5 class="mb-0">Estado del pedido</h5>
-      </div>
-      <div class="card-body">
-        <p class="mb-2">
-          Estado actual:
-          {{#ifEquals order.estado 'pendiente'}}
-            <span class="badge bg-warning text-dark">Pendiente</span>
-          {{/ifEquals}}
-          {{#ifEquals order.estado 'en proceso'}}
-            <span class="badge bg-info text-dark">En proceso</span>
-          {{/ifEquals}}
-          {{#ifEquals order.estado 'completado'}}
-            <span class="badge bg-success">Completado</span>
-          {{/ifEquals}}
-        </p>
-
-        {{#if order.delivery}}
-          <div class="mt-2">
-            <h6 class="mb-1">Delivery</h6>
-            <div>{{order.delivery.nombre}} {{order.delivery.apellido}}</div>
-            <div class="text-muted small">{{order.delivery.telefono}}</div>
+          <div class="d-flex justify-content-between mb-3 text-muted">
+            <span>ITBIS ({{order.itbis}}%)</span>
+            <span>RD$ {{order.itbisMonto}}</span>
+          </div> <div class="border-top pt-3 d-flex justify-content-between align-items-center">
+            <span class="h5 fw-bold mb-0">Total</span>
+            <span class="h4 fw-bold text-success mb-0">RD$ {{order.total}}</span>
           </div>
-        {{/if}}
-
-        <small class="text-muted d-block mt-3">
-          Si tienes dudas con este pedido, contacta directamente al comercio.
-        </small>
+        </div>
       </div>
+
+      <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+          <h6 class="text-uppercase text-muted small fw-bold mb-3">Restaurante</h6>
+          <div class="d-flex align-items-center">
+            {{#if order.comercio.logoComercio}}
+              <img src="{{order.comercio.logoComercio}}" class="rounded-circle border me-3" style="width: 50px; height: 50px; object-fit: cover;">
+            {{else}}
+              <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                <i class="fas fa-store"></i>
+              </div>
+            {{/if}}
+            <div>
+              <h6 class="fw-bold mb-0">{{order.comercio.nombreComercio}}</h6>
+              <a href="tel:{{order.comercio.telefono}}" class="text-decoration-none small text-primary">
+                <i class="fas fa-phone me-1"></i> {{order.comercio.telefono}}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4">
+          <h6 class="text-uppercase text-muted small fw-bold mb-3">Dirección de Entrega</h6>
+          <div class="d-flex">
+            <div class="me-3 text-danger"><i class="fas fa-map-marker-alt fa-lg"></i></div>
+            <div>
+              {{#if order.direccion}}
+                <h6 class="fw-bold mb-1">{{order.direccion.nombre}}</h6>
+                <p class="text-muted small mb-0">{{order.direccion.descripcion}}</p>
+              {{else}}
+                <span class="text-muted fst-italic">Dirección no disponible</span>
+              {{/if}}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {{#if order.delivery}}
+      <div class="card border-0 shadow-sm rounded-4 bg-primary text-white">
+        <div class="card-body p-4">
+          <h6 class="text-uppercase small fw-bold mb-3 opacity-75">Tu Repartidor</h6>
+          <div class="d-flex align-items-center">
+            <div class="bg-white text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
+              <i class="fas fa-motorcycle"></i>
+            </div>
+            <div>
+              <h6 class="fw-bold mb-0">{{order.delivery.nombre}} {{order.delivery.apellido}}</h6>
+              <div class="small opacity-75">{{order.delivery.telefono}}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {{/if}}
+
     </div>
+
   </div>
 </div>

@@ -46,7 +46,7 @@ router.post(
     const { identifier, password } = req.body;
 
     try {
-      // 1) Buscar en User (cliente / delivery / admin / comercio “viejo”)
+      // 1) Buscar en User (cliente / delivery / admin)
       let user = await User.findOne({
         $or: [{ username: identifier }, { correo: identifier }]
       });
@@ -55,12 +55,14 @@ router.post(
       let usernameSesion = null;
       let passwordHash = null;
       let isActive = false;
+      let fotoPerfil = null; // Variable para guardar la foto
 
       if (user) {
         rolSesion = user.rol;
         usernameSesion = user.username;
         passwordHash = user.passwordHash;
         isActive = user.isActive;
+        fotoPerfil = user.fotoPerfil; // Guardamos la foto del usuario
       } else {
         // 2) Si no es User, buscar en Commerce por correo
         const commerce = await Commerce.findOne({ correo: identifier });
@@ -70,9 +72,10 @@ router.post(
         }
 
         rolSesion = 'comercio';
-        usernameSesion = commerce.nombreComercio; // lo que quieres mostrar en la sesión
+        usernameSesion = commerce.nombreComercio; 
         passwordHash = commerce.passwordHash;
         isActive = commerce.isActive;
+        fotoPerfil = commerce.logoComercio; // Guardamos el logo del comercio
 
         // Guardar id en la misma clave para que el resto del código funcione
         user = { id: commerce.id };
@@ -92,10 +95,12 @@ router.post(
         return res.redirect('/auth/login');
       }
 
+      // === AQUÍ GUARDAMOS TODO EN LA SESIÓN (INCLUIDA LA FOTO) ===
       req.session.user = {
         id: user.id,
         username: usernameSesion,
-        rol: rolSesion
+        rol: rolSesion,
+        fotoPerfil: fotoPerfil // <--- Esto soluciona el problema de la imagen
       };
 
       const homes = {
@@ -166,17 +171,17 @@ router.post(
 
       const resetLink = `${req.protocol}://${req.get('host')}/auth/reset-password/${resetToken}`;
 
-await sendMail({
-  to: user.correo,
-  subject: 'AppCenar - Restablecer contraseña',
-  html: `
-    <p>Hola ${user.nombre},</p>
-    <p>Has solicitado restablecer tu contraseña de AppCenar.</p>
-    <p>Haz clic en el siguiente enlace para establecer una nueva contraseña:</p>
-    <p><a href="${resetLink}">${resetLink}</a></p>
-    <p>Si no fuiste tú, puedes ignorar este correo.</p>
-  `
-});
+      await sendMail({
+        to: user.correo,
+        subject: 'AppCenar - Restablecer contraseña',
+        html: `
+          <p>Hola ${user.nombre},</p>
+          <p>Has solicitado restablecer tu contraseña de AppCenar.</p>
+          <p>Haz clic en el siguiente enlace para establecer una nueva contraseña:</p>
+          <p><a href="${resetLink}">${resetLink}</a></p>
+          <p>Si no fuiste tú, puedes ignorar este correo.</p>
+        `
+      });
       req.flash('success_msg', 'Si el usuario existe, se ha enviado un correo con las instrucciones.');
       return res.redirect('/auth/login');
     } catch (err) {
@@ -272,7 +277,7 @@ router.get('/register/client', (req, res) => {
 // POST registro cliente/delivery
 router.post(
   '/register/client',
-  upload.single('fotoPerfil'),                 // ← agregar ESTO aquí
+  upload.single('fotoPerfil'),
   [
     body('nombre').notEmpty().withMessage('Nombre requerido'),
     body('apellido').notEmpty().withMessage('Apellido requerido'),
@@ -312,7 +317,7 @@ router.post(
         username,
         passwordHash,
         rol,
-        fotoPerfil: req.file ? `/uploads/${req.file.filename}` : null,
+        fotoPerfil: req.file ? `/uploads/users/${req.file.filename}` : null,
         isActive: false,
         activationToken
       });
@@ -493,23 +498,7 @@ router.get('/activate/:token', async (req, res) => {
   }
 });
 
-
-// Cómo usarlo para activar tu cuenta
-
-// En el navegador ve a:
-
-// http://localhost:3000/auth/c-activate/TU_USERNAME
-
-// Ejemplo, si tu usuario es rafa:
-
-// http://localhost:3000/auth/c-activate/rafa
-
-// Si existe, verás un mensaje en la página tipo:
-
-// Usuario rafa activado
-
-// Ahora ve a /auth/login, pon ese usuario y contraseña: ya no debería salir “Tu cuenta está inactiva”.
-
+// Rutas de desarrollo para activar sin correo
 router.get('/c-activate/:username', async (req, res) => {
   const { username } = req.params;
   try {
@@ -527,9 +516,6 @@ router.get('/c-activate/:username', async (req, res) => {
   }
 });
 
-
-// Activar comercio sin usar el correo de activación (solo para desarrollo)
-//http://localhost:3000/auth/c-activate-commerce/correo@comercio.com
 router.get('/c-activate-commerce/:correo', async (req, res) => {
   const { correo } = req.params;
 

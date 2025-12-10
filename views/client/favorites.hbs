@@ -1,54 +1,107 @@
-<div class="mt-4">
-  <h2>Mis favoritos</h2>
-  <hr>
+<div class="container py-4">
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold text-dark mb-1">
+        <i class="fas fa-heart text-danger me-2"></i>Mis Favoritos
+      </h2>
+      <p class="text-muted mb-0">Tus lugares preferidos para pedir comida.</p>
+    </div>
+    <a href="/client/home" class="btn btn-outline-secondary rounded-pill px-4">
+      <i class="fas fa-arrow-left me-2"></i> Volver
+    </a>
+  </div>
 
+  {{!-- Estado Vacío (Si no hay favoritos) --}}
   {{#unless favorites.length}}
-    <div class="alert alert-info">
-      No tienes comercios favoritos todavía.
+    <div class="card border-0 shadow-sm rounded-4 py-5 text-center bg-white">
+      <div class="card-body">
+        <div class="mb-3 text-muted opacity-25">
+          <i class="far fa-heart fa-4x"></i>
+        </div>
+        <h4 class="fw-bold text-dark">No tienes favoritos aún</h4>
+        <p class="text-muted mb-4">Explora los comercios y guarda los que más te gusten para encontrarlos rápido.</p>
+        <a href="/client/home" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
+          <i class="fas fa-search me-2"></i> Explorar Restaurantes
+        </a>
+      </div>
     </div>
   {{/unless}}
 
-  <div class="row">
+  <div class="row g-4">
     {{#each favorites}}
-      <div class="col-md-4 mb-3">
-        <div class="card h-100">
-          {{#if commerce.logoComercio}}
-            <img src="{{commerce.logoComercio}}" class="card-img-top" style="height: 180px; object-fit: cover;">
-          {{/if}}
-          <div class="card-body">
-            <h5 class="card-title">{{commerce.nombreComercio}}</h5>
-            <p class="card-text">
-              {{commerce.horaApertura}} - {{commerce.horaCierre}}<br>
-              Tel: {{commerce.telefono}}
-            </p>
-            <a href="/client/catalog/{{commerce._id}}" class="btn btn-primary btn-sm">Ver catálogo</a>
-            <button 
-              type="button" 
-              class="btn btn-outline-danger btn-sm ms-2"
-              onclick="toggleFavorite('{{commerce._id}}', 'remove')">
-              Quitar de favoritos
-            </button>
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm hover-effect rounded-4 overflow-hidden">
+          
+          <div class="position-relative">
+            {{#if commerce.logoComercio}}
+              <img src="{{commerce.logoComercio}}" class="card-img-top" style="height: 180px; object-fit: cover;">
+            {{else}}
+              <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 180px;">
+                <i class="fas fa-store fa-3x text-muted opacity-50"></i>
+              </div>
+            {{/if}}
+            
+            <div class="position-absolute top-0 end-0 m-3">
+              <span class="badge bg-white text-danger shadow-sm py-2 px-3 rounded-pill">
+                <i class="fas fa-heart"></i>
+              </span>
+            </div>
+          </div>
+
+          <div class="card-body d-flex flex-column p-4">
+            <h5 class="card-title fw-bold mb-1 text-dark">{{commerce.nombreComercio}}</h5>
+            
+            <div class="mb-4">
+              <div class="d-flex align-items-center text-muted small mb-1">
+                <i class="far fa-clock me-2 text-primary"></i> {{commerce.horaApertura}} - {{commerce.horaCierre}}
+              </div>
+              <div class="d-flex align-items-center text-muted small">
+                <i class="fas fa-phone-alt me-2 text-primary"></i> {{commerce.telefono}}
+              </div>
+            </div>
+
+            <div class="mt-auto d-flex gap-2">
+              <a href="/client/catalog/{{commerce._id}}" class="btn btn-primary flex-grow-1 rounded-pill shadow-sm fw-bold">
+                <i class="fas fa-utensils me-2"></i> Ver Menú
+              </a>
+              
+              <button type="button" 
+                      class="btn btn-outline-danger rounded-circle shadow-sm" 
+                      style="width: 42px; height: 42px; padding: 0;"
+                      onclick="toggleFavorite('{{commerce._id}}', 'remove')"
+                      title="Quitar de favoritos">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </div>
+
           </div>
         </div>
       </div>
     {{/each}}
   </div>
 
-  <a href="/client/home" class="btn btn-secondary mt-3">Volver</a>
 </div>
 
 <script>
 async function toggleFavorite(commerceId, action) {
-  const res = await fetch('/client/favorites', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ commerceId, action })
-  });
-  const data = await res.json();
-  if (data.success) {
-    location.reload();
-  } else {
-    alert(data.message || 'Error al actualizar favorito');
+  if(!confirm('¿Quitar este comercio de tus favoritos?')) return;
+
+  try {
+    const res = await fetch('/client/favorites', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ commerceId, action })
+    });
+    const data = await res.json();
+    if (data.success) {
+      location.reload();
+    } else {
+      alert(data.message || 'Error al actualizar favorito');
+    }
+  } catch (error) {
+    console.error(error);
+    alert('Error de conexión');
   }
 }
 </script>

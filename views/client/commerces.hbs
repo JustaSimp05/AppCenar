@@ -1,96 +1,118 @@
-<div class="container mt-4">
-  <div class="row mb-4">
-    <div class="col-12">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>{{commerceType.nombre}}</h2>
-        <a href="/client/home" class="btn btn-secondary">
-          <i class="fas fa-arrow-left me-1"></i>Volver al Home
-        </a>
-      </div>
-
-      <!-- Buscador -->
-      <div class="card mb-4">
-        <div class="card-body">
-          <div class="input-group">
-            <input type="text" id="busquedaComercio" class="form-control"
-                   placeholder="Buscar comercios por nombre..."
-                   value="{{query}}">
-            <button class="btn btn-primary" type="button" id="btnBuscar">
-              <i class="fas fa-search"></i> Buscar
-            </button>
-          </div>
-          <small class="text-muted">Total de comercios encontrados: <span id="totalComercios">{{commerces.length}}</span></small>
+<div class="container py-4">
+  
+  <div class="card border-0 shadow-sm mb-5 overflow-hidden text-white" style="background: linear-gradient(135deg, var(--primary-color), var(--warning-color));">
+    <div class="card-body p-5 position-relative">
+      <div class="d-flex justify-content-between align-items-center position-relative z-1">
+        <div>
+          <h6 class="text-uppercase letter-spacing-1 opacity-75 mb-2">Categoría</h6>
+          <h1 class="display-5 fw-bold mb-0">{{commerceType.nombre}}</h1>
+          <p class="mt-2 mb-0 opacity-75">{{commerceType.descripcion}}</p>
+        </div>
+        <div class="d-none d-md-block opacity-25">
+          {{#if commerceType.icono}}
+            <img src="{{commerceType.icono}}" style="height: 100px; filter: brightness(0) invert(1);">
+          {{else}}
+            <i class="fas fa-utensils fa-6x text-white"></i>
+          {{/if}}
         </div>
       </div>
-
-      <!-- Mensaje si no hay comercios -->
-      {{#if (eq commerces.length 0)}}
-      <div class="alert alert-warning text-center">
-        <i class="fas fa-exclamation-triangle me-2"></i>
-        No se encontraron comercios de este tipo. Intenta con otro tipo o espera a que se activen.
-      </div>
-      {{else}}
-      <!-- Listado de comercios -->
-      <div class="row" id="listaComercios">
-        {{#each commerces}}
-        <div class="col-md-4 col-sm-6 mb-4">
-          <div class="card h-100 shadow-sm">
-
-            {{#if this.logoComercio}}
-            <img src="{{this.logoComercio}}" class="card-img-top" alt="{{this.nombreComercio}}"
-                 style="height: 200px; object-fit: cover;">
-            {{else}}
-            <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
-                 style="height: 200px;">
-              <i class="fas fa-store fa-4x text-muted"></i>
-            </div>
-            {{/if}}
-
-            <div class="card-body d-flex flex-column">
-              <h5 class="card-title">{{this.nombreComercio}}</h5>
-              <p class="card-text text-muted mb-2">
-                <i class="fas fa-tag me-1"></i>{{this.tipoComercio.nombre}}
-              </p>
-              <p class="card-text flex-grow-1">
-                <small class="text-muted">
-                  <i class="fas fa-clock me-1"></i>
-                  {{this.horaApertura}} - {{this.horaCierre}}
-                </small>
-              </p>
-
-              <!-- BOTÓN FAVORITO -->
-              <div class="d-flex justify-content-between align-items-center mt-auto">
-                <button class="btn btn-outline-danger btn-sm toggle-favorito"
-                        data-commerce="{{this._id}}"
-                        data-action="{{#if (includes ../favoritosSet this._id)}}remove{{else}}add{{/if}}">
-
-                  {{#if (includes ../favoritosSet this._id)}}
-                    <i class="fas fa-heart"></i> Remover
-                  {{else}}
-                    <i class="far fa-heart"></i> Favorito
-                  {{/if}}
-
-                </button>
-
-                <a href="/client/catalog/{{this._id}}" class="btn btn-primary">
-                  <i class="fas fa-shopping-bag me-1"></i>Ver Menú
-                </a>
-              </div>
-
-            </div>
-          </div>
-        </div>
-        {{/each}}
-      </div>
-      {{/if}}
+      <div class="position-absolute top-0 end-0 bg-white opacity-10 rounded-circle" style="width: 300px; height: 300px; margin-top: -100px; margin-right: -100px;"></div>
     </div>
   </div>
+
+  <div class="row align-items-center mb-4">
+    <div class="col-md-6 mb-3 mb-md-0">
+      <a href="/client/home" class="btn btn-outline-secondary rounded-pill px-4">
+        <i class="fas fa-arrow-left me-2"></i> Volver
+      </a>
+    </div>
+    <div class="col-md-6">
+      <div class="input-group shadow-sm rounded-pill overflow-hidden bg-white">
+        <span class="input-group-text bg-white border-0 ps-4 text-muted"><i class="fas fa-search"></i></span>
+        <input type="text" id="busquedaComercio" class="form-control border-0 py-2" placeholder="Buscar restaurante..." value="{{query}}">
+        <button class="btn btn-primary px-4 fw-bold" type="button" id="btnBuscar">Buscar</button>
+      </div>
+      <div class="text-end mt-2 me-2">
+        <small class="text-muted fw-bold"><span id="totalComercios">{{commerces.length}}</span> resultados</small>
+      </div>
+    </div>
+  </div>
+
+  <div id="listaComercios" class="row g-4">
+    
+    {{#if (eq commerces.length 0)}}
+      <div class="col-12 text-center py-5">
+        <div class="mb-3 text-muted opacity-25">
+          <i class="fas fa-store-slash fa-4x"></i>
+        </div>
+        <h4 class="fw-bold text-muted">No encontramos comercios aquí</h4>
+        <p class="text-muted">Intenta buscar en otra categoría o vuelve más tarde.</p>
+      </div>
+    {{else}}
+      
+      {{#each commerces}}
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm hover-effect rounded-4 overflow-hidden">
+          
+          <div class="position-relative">
+            {{#if this.logoComercio}}
+              <img src="{{this.logoComercio}}" class="card-img-top" style="height: 180px; object-fit: cover;">
+            {{else}}
+              <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 180px;">
+                <i class="fas fa-store fa-3x text-muted opacity-50"></i>
+              </div>
+            {{/if}}
+            
+            <div class="position-absolute top-0 end-0 m-3">
+              <span class="badge bg-white text-dark shadow-sm py-2 px-3 rounded-pill">
+                <i class="fas fa-tag text-primary me-1"></i>{{this.tipoComercio.nombre}}
+              </span>
+            </div>
+          </div>
+
+          <div class="card-body d-flex flex-column p-4">
+            <h5 class="card-title fw-bold mb-1 text-dark">{{this.nombreComercio}}</h5>
+            
+            <div class="mb-4">
+              <div class="d-flex align-items-center text-muted small mb-1">
+                <i class="far fa-clock me-2 text-primary"></i> {{this.horaApertura}} - {{this.horaCierre}}
+              </div>
+              <div class="d-flex align-items-center text-muted small">
+                <i class="fas fa-phone-alt me-2 text-primary"></i> {{this.telefono}}
+              </div>
+            </div>
+
+            <div class="mt-auto d-flex gap-2">
+              <a href="/client/catalog/{{this._id}}" class="btn btn-primary flex-grow-1 rounded-pill shadow-sm fw-bold">
+                Ver Menú <i class="fas fa-arrow-right ms-1"></i>
+              </a>
+              
+              <button class="btn btn-outline-danger rounded-circle toggle-favorito shadow-sm" 
+                      style="width: 42px; height: 42px; padding: 0;"
+                      data-commerce="{{this._id}}"
+                      data-action="{{#if (includes ../favoritosSet this._id)}}remove{{else}}add{{/if}}"
+                      title="Favorito">
+                {{#if (includes ../favoritosSet this._id)}}
+                  <i class="fas fa-heart"></i>
+                {{else}}
+                  <i class="far fa-heart"></i>
+                {{/if}}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      {{/each}}
+
+    {{/if}}
+  </div>
+
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
 
-  // Buscar comercios
   const inputBusqueda = document.getElementById('busquedaComercio');
   const btnBuscar = document.getElementById('btnBuscar');
 
@@ -107,11 +129,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (data.commerces.length === 0) {
       container.innerHTML = `
-        <div class="col-12">
-          <div class="alert alert-warning text-center">
-            <i class="fas fa-search me-2"></i>
-            No se encontraron comercios con "${query}". Intenta con otro término.
+        <div class="col-12 text-center py-5">
+          <div class="mb-3 text-muted opacity-25">
+            <i class="fas fa-search fa-4x"></i>
           </div>
+          <h4 class="fw-bold text-muted">Sin resultados</h4>
+          <p class="text-muted">No encontramos "${query}" en esta categoría.</p>
         </div>
       `;
     } else {
@@ -119,44 +142,48 @@ document.addEventListener('DOMContentLoaded', function() {
       data.commerces.forEach(comercio => {
         const esFavorito = data.favoritosSet.includes(comercio._id.toString());
 
+        // HTML ACTUALIZADO PARA COINCIDIR CON EL DISEÑO DE HBS
         const cardHtml = `
-          <div class="col-md-4 col-sm-6 mb-4">
-            <div class="card h-100 shadow-sm">
+          <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm hover-effect rounded-4 overflow-hidden">
+              
+              <div class="position-relative">
+                ${comercio.logoComercio ? 
+                  `<img src="${comercio.logoComercio}" class="card-img-top" style="height: 180px; object-fit: cover;">` : 
+                  `<div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 180px;">
+                     <i class="fas fa-store fa-3x text-muted opacity-50"></i>
+                   </div>`
+                }
+                <div class="position-absolute top-0 end-0 m-3">
+                  <span class="badge bg-white text-dark shadow-sm py-2 px-3 rounded-pill">
+                    <i class="fas fa-tag text-primary me-1"></i>${comercio.tipoComercio.nombre}
+                  </span>
+                </div>
+              </div>
 
-              ${comercio.logoComercio ?
-                `<img src="${comercio.logoComercio}" class="card-img-top" style="height:200px; object-fit:cover;">`
-                :
-                `<div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height:200px;">
-                  <i class="fas fa-store fa-4x text-muted"></i>
-                 </div>`
-              }
+              <div class="card-body d-flex flex-column p-4">
+                <h5 class="card-title fw-bold mb-1 text-dark">${comercio.nombreComercio}</h5>
+                
+                <div class="mb-4">
+                  <div class="d-flex align-items-center text-muted small mb-1">
+                    <i class="far fa-clock me-2 text-primary"></i> ${comercio.horaApertura} - ${comercio.horaCierre}
+                  </div>
+                  <div class="d-flex align-items-center text-muted small">
+                    <i class="fas fa-phone-alt me-2 text-primary"></i> ${comercio.telefono}
+                  </div>
+                </div>
 
-              <div class="card-body d-flex flex-column">
-                <h5 class="card-title">${comercio.nombreComercio}</h5>
-                <p class="card-text text-muted mb-2">
-                  <i class="fas fa-tag me-1"></i>${comercio.tipoComercio.nombre}
-                </p>
-
-                <p class="card-text flex-grow-1">
-                  <small class="text-muted">
-                    <i class="fas fa-clock me-1"></i>
-                    ${comercio.horaApertura} - ${comercio.horaCierre}
-                  </small>
-                </p>
-
-                <div class="d-flex justify-content-between align-items-center mt-auto">
-
-                  <button class="btn btn-outline-danger toggle-favorito"
+                <div class="mt-auto d-flex gap-2">
+                  <a href="/client/catalog/${comercio._id}" class="btn btn-primary flex-grow-1 rounded-pill shadow-sm fw-bold">
+                    Ver Menú <i class="fas fa-arrow-right ms-1"></i>
+                  </a>
+                  
+                  <button class="btn btn-outline-danger rounded-circle toggle-favorito shadow-sm" 
+                          style="width: 42px; height: 42px; padding: 0;"
                           data-commerce="${comercio._id}"
                           data-action="${esFavorito ? "remove" : "add"}">
                     <i class="${esFavorito ? "fas fa-heart" : "far fa-heart"}"></i>
-                    ${esFavorito ? "Remover" : "Favorito"}
                   </button>
-
-                  <a href="/client/catalog/${comercio._id}" class="btn btn-primary">
-                    <i class="fas fa-shopping-bag me-1"></i>Ver Menú
-                  </a>
-
                 </div>
 
               </div>
@@ -195,12 +222,11 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    // Toggle visual instantáneo
     if (action === "add") {
-      btn.innerHTML = '<i class="fas fa-heart"></i> Remover';
+      btn.innerHTML = '<i class="fas fa-heart"></i>'; // Icono lleno
       btn.dataset.action = "remove";
     } else {
-      btn.innerHTML = '<i class="far fa-heart"></i> Favorito';
+      btn.innerHTML = '<i class="far fa-heart"></i>'; // Icono vacío
       btn.dataset.action = "add";
     }
   });

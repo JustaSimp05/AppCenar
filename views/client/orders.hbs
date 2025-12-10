@@ -1,32 +1,85 @@
-<div class="mt-4">
-  <h2>Mis pedidos</h2>
-  <hr>
+<div class="container py-4">
+  
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold text-dark mb-1">
+        <i class="fas fa-receipt text-primary me-2"></i>Mis Pedidos
+      </h2>
+      <p class="text-muted mb-0">Historial de tus compras recientes.</p>
+    </div>
+    <a href="/client/home" class="btn btn-outline-secondary rounded-pill px-4">
+      <i class="fas fa-arrow-left me-2"></i> Volver
+    </a>
+  </div>
 
+  {{!-- Estado Vacío --}}
   {{#unless orders.length}}
-    <div class="alert alert-info">
-      No tienes pedidos todavía.
+    <div class="card border-0 shadow-sm rounded-4 py-5 text-center bg-white">
+      <div class="card-body">
+        <div class="mb-3 text-muted opacity-25">
+          <i class="fas fa-clipboard-list fa-4x"></i>
+        </div>
+        <h4 class="fw-bold text-dark">No has realizado pedidos</h4>
+        <p class="text-muted mb-4">¿Tienes hambre? ¡Pide algo delicioso ahora!</p>
+        <a href="/client/home" class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold">
+          <i class="fas fa-utensils me-2"></i> Ver Restaurantes
+        </a>
+      </div>
     </div>
   {{/unless}}
 
-  <div class="row">
+  <div class="row g-4">
     {{#each orders}}
-      <div class="col-md-4 mb-3">
-        <div class="card h-100">
-          <div class="card-body">
-            {{#if comercio.logoComercio}}
-              <img src="{{comercio.logoComercio}}" class="img-fluid mb-2" style="max-height: 80px; object-fit: contain;">
-            {{/if}}
-            <h5 class="card-title">{{comercio.nombreComercio}}</h5>
-            <p class="card-text">
-              Estado: <strong>{{estado}}</strong><br>
-              Total: <strong>RD$ {{total}}</strong><br>
-              Productos: {{productos.length}}<br>
-              Fecha: {{creadoEn}}
-            </p>
-            <a href="/client/orders/{{_id}}" class="btn btn-sm btn-primary">Ver detalle</a>
+      <div class="col-md-6 col-lg-4">
+        <div class="card h-100 border-0 shadow-sm hover-effect rounded-4 overflow-hidden">
+          
+          <div class="card-body p-4 d-flex flex-column">
+            
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div class="d-flex align-items-center">
+                {{#if commerce.logoComercio}}
+                  <img src="{{commerce.logoComercio}}" class="rounded-circle border me-3 shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                {{else}}
+                  <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3 border" style="width: 50px; height: 50px;">
+                    <i class="fas fa-store text-muted"></i>
+                  </div>
+                {{/if}}
+                <div>
+                  <h6 class="fw-bold text-dark mb-0 text-truncate" style="max-width: 150px;">{{commerce.nombreComercio}}</h6>
+                  <small class="text-muted" style="font-size: 0.75rem;">{{creadoEn}}</small>
+                </div>
+              </div>
+
+              {{#ifEquals estado 'pendiente'}}
+                <span class="badge bg-warning text-dark rounded-pill">Pendiente</span>
+              {{/ifEquals}}
+              {{#ifEquals estado 'en proceso'}}
+                <span class="badge bg-info text-white rounded-pill">En Proceso</span>
+              {{/ifEquals}}
+              {{#ifEquals estado 'completado'}}
+                <span class="badge bg-success rounded-pill">Completado</span>
+              {{/ifEquals}}
+            </div>
+
+            <div class="bg-light rounded-3 p-3 mb-3">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="text-muted small"><i class="fas fa-box-open me-1"></i> Artículos</span>
+                <span class="fw-bold text-dark">{{productos.length}}</span>
+              </div>
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted small"><i class="fas fa-coins me-1"></i> Total</span>
+                <span class="fw-bold text-primary fs-5">RD$ {{total}}</span>
+              </div>
+            </div>
+
+            <a href="/client/orders/{{_id}}" class="btn btn-outline-primary w-100 rounded-pill mt-auto fw-bold">
+              Ver Detalles <i class="fas fa-chevron-right ms-1 small"></i>
+            </a>
+
           </div>
         </div>
       </div>
     {{/each}}
   </div>
+
 </div>
