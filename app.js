@@ -84,7 +84,7 @@ hbs.registerHelper('multiplyPercent', function (subtotal, itbis) {
 });
 
 // Conexión a MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/appcenar_dev')
+mongoose.connect(process.env.MONGODB_URL || 'mongodb://localhost:27017/appcenar_dev')
   .then(() => console.log('✅ MongoDB conectado'))
   .catch(err => console.error('❌ Error MongoDB:', err));
 
